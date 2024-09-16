@@ -1,7 +1,7 @@
 package com.voghbum.application.service;
 
 import com.voghbum.aiprovider.commons.AiProvider;
-import com.voghbum.application.data.dto.AnalyzeResponse;
+import com.voghbum.application.data.response.AnalyzeResponse;
 import com.voghbum.instaprovider.InstaProvider;
 import com.voghbum.instaprovider.data.UserProfile;
 import org.springframework.stereotype.Service;

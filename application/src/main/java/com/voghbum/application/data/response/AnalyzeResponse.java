@@ -1,4 +1,4 @@
-package com.voghbum.application.data.dto;
+package com.voghbum.application.data.response;
 
 
 import com.fasterxml.jackson.annotation.JsonProperty;

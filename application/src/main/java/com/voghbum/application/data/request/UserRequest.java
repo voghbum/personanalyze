@@ -1,4 +1,4 @@
-package com.voghbum.application.controller.request;
+package com.voghbum.application.data.request;
 
 public class UserRequest {
     private String username;

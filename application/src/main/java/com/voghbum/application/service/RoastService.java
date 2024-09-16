@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.voghbum.aiprovider.commons.AiProvider;
 import com.voghbum.aiprovider.commons.RoastInput;
+import com.voghbum.application.data.response.RoastResponse;
 import com.voghbum.instaprovider.InstaProvider;
 import com.voghbum.instaprovider.data.UserPosts;
 import org.springframework.stereotype.Service;
@@ -24,21 +25,18 @@ public class RoastService {
     }
 
 
-    public Map<String, Object> roast(String username) throws IOException, InterruptedException {
-        Map<String, Object> result = new HashMap<>();
+    public RoastResponse roast(String username) throws IOException, InterruptedException {
+        RoastResponse result = new RoastResponse();
         UserPosts data = instaProvider.getProfilePosts(username);
 
-        /*var allSingleImages = data.getItems().stream()
+        var allSingleImages = data.getData().getItems().stream()
                 .map(p -> p.getImageVersions().getItems())
                 .flatMap(List::stream)
-                .map(UserPosts.UrlItem::getUrl)
+                .map(UserPosts.ImageVersion::getUrl)
                 .sorted((a, b) -> new Random().nextInt(3) - 1)
                 .toList();
 
-        var allCarouselImages = data.getItems().stream().map(UserPosts.Item::getCarouselMedia).filter(Objects::nonNull).flatMap(Collection::stream)
-                .map(UserPosts.CarouselMedia::getThumbnailUrl).toList();
-
-        var randomizedAllImages = Stream.concat(allCarouselImages.stream(), allSingleImages.stream()).collect(Collectors.toCollection(ArrayList::new));
+        var randomizedAllImages = Stream.concat(allSingleImages.stream(), allSingleImages.stream()).collect(Collectors.toCollection(ArrayList::new));
         Collections.shuffle(randomizedAllImages);
 
         // İlk 3 elemanı içeren bir sublist oluşturuyoruz
@@ -49,7 +47,7 @@ public class RoastService {
            res.setImageUrl(i);
            return res;
         }).toList();
-        result.put("imageUrls", selectedImages);
+        result.setImageUrls(selectedImages);
 
 
         var roastInput = new RoastInput();
@@ -59,7 +57,7 @@ public class RoastService {
         JsonNode rootNode = mapper.readTree(aiResultJson);
         var aiResultText = rootNode.get("choices").get(0).get("message").get("content").asText();
 
-        result.put("aiResult", aiResultText);*/
+        result.setAiResult(aiResultText);
         return result;
     }
 }
