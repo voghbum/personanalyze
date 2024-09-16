@@ -5,11 +5,10 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.voghbum.aiprovider.commons.AiProvider;
 import com.voghbum.aiprovider.commons.RoastInput;
 import com.voghbum.instaprovider.InstaProvider;
-import com.voghbum.instaprovider.data.ProfilePostsData;
+import com.voghbum.instaprovider.data.UserPosts;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
-import java.sql.Array;
 import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -27,17 +26,17 @@ public class RoastService {
 
     public Map<String, Object> roast(String username) throws IOException, InterruptedException {
         Map<String, Object> result = new HashMap<>();
-        ProfilePostsData data = instaProvider.getProfilePosts(username);
+        UserPosts data = instaProvider.getProfilePosts(username);
 
-        var allSingleImages = data.getItems().stream()
+        /*var allSingleImages = data.getItems().stream()
                 .map(p -> p.getImageVersions().getItems())
                 .flatMap(List::stream)
-                .map(ProfilePostsData.UrlItem::getUrl)
+                .map(UserPosts.UrlItem::getUrl)
                 .sorted((a, b) -> new Random().nextInt(3) - 1)
                 .toList();
 
-        var allCarouselImages = data.getItems().stream().map(ProfilePostsData.Item::getCarouselMedia).filter(Objects::nonNull).flatMap(Collection::stream)
-                .map(ProfilePostsData.CarouselMedia::getThumbnailUrl).toList();
+        var allCarouselImages = data.getItems().stream().map(UserPosts.Item::getCarouselMedia).filter(Objects::nonNull).flatMap(Collection::stream)
+                .map(UserPosts.CarouselMedia::getThumbnailUrl).toList();
 
         var randomizedAllImages = Stream.concat(allCarouselImages.stream(), allSingleImages.stream()).collect(Collectors.toCollection(ArrayList::new));
         Collections.shuffle(randomizedAllImages);
@@ -60,7 +59,7 @@ public class RoastService {
         JsonNode rootNode = mapper.readTree(aiResultJson);
         var aiResultText = rootNode.get("choices").get(0).get("message").get("content").asText();
 
-        result.put("aiResult", aiResultText);
+        result.put("aiResult", aiResultText);*/
         return result;
     }
 }

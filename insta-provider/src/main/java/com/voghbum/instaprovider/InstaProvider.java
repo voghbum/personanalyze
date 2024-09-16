@@ -1,13 +1,13 @@
 package com.voghbum.instaprovider;
 
-import com.voghbum.instaprovider.data.ProfileInfoData;
-import com.voghbum.instaprovider.data.ProfilePostsData;
+import com.voghbum.instaprovider.data.UserProfile;
+import com.voghbum.instaprovider.data.UserPosts;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
 
 @Service
 public interface InstaProvider {
-    ProfileInfoData getProfileInfo(String username) throws IOException, InterruptedException;
-    ProfilePostsData getProfilePosts(String username) throws IOException, InterruptedException;
+    UserProfile getProfileInfo(String username) throws IOException, InterruptedException;
+    UserPosts getProfilePosts(String username) throws IOException, InterruptedException;
 }

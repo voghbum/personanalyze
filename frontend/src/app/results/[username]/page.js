@@ -25,18 +25,23 @@ const ResultsPage = () => {
       try {
         const cachedData = localStorage.getItem(`instagramAnalysis_${username}`);
         if (cachedData) {
+          console.log('Cached data:', cachedData); // Log fetched data
           setData(JSON.parse(cachedData));
           setLoading(false);
           return;
         }
 
-        const response = await fetch(`/api/analyze`, {
+        const response = await fetch(`http://localhost:8000/api/analyze/`, {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': 'Basic ' + btoa('anan:anan')
+          },
           body: JSON.stringify({ username }),
         });
         if (!response.ok) throw new Error('Failed to fetch data');
         const result = await response.json();
+        console.log('Fetched data:', result); // Log fetched data
         setData(result);
         localStorage.setItem(`instagramAnalysis_${username}`, JSON.stringify(result));
       } catch (error) {
@@ -128,7 +133,7 @@ const ResultsPage = () => {
           <motion.div>
             <h3 className="text-3xl font-bold mb-6 text-pink-500">En Popüler Gönderiler</h3>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-12">
-              {user_posts.items
+              {user_posts.data.items
                 .sort((a, b) => b.like_count - a.like_count)
                 .slice(0, 6)
                 .map((post, index) => (
