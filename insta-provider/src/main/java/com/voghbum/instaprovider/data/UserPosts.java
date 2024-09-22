@@ -62,6 +62,54 @@ public class UserPosts {
         }
     }
 
+    /*
+        {
+          "user_feed": [
+            {
+              "id": "post1",
+              "thumbnail_url": "https://example.com/post1_thumbnail.jpg",
+              "caption": "Harika bir gün geçirdik! #tatil #deniz",
+              "like_count": 1500,
+              "comment_count": 45
+            },
+            {
+              "id": "post2",
+              "thumbnail_url": "https://example.com/post2_thumbnail.jpg",
+              "caption": "Yeni projem hakkında heyecanlıyım! #iş #proje",
+              "like_count": 2000,
+              "comment_count": 78
+            },
+            {
+              "id": "post3",
+              "thumbnail_url": "https://example.com/post3_thumbnail.jpg",
+              "caption": "Bugün harika bir kahvaltı yaptık #kahvaltı #aile",
+              "like_count": 1200,
+              "comment_count": 30
+            },
+            {
+              "id": "post4",
+              "thumbnail_url": "https://example.com/post4_thumbnail.jpg",
+              "caption": "Yeni hobim: Fotoğrafçılık #fotoğraf #hobi",
+              "like_count": 1800,
+              "comment_count": 55
+            },
+            {
+              "id": "post5",
+              "thumbnail_url": "https://example.com/post5_thumbnail.jpg",
+              "caption": "Doğa yürüyüşü #doğa #spor",
+              "like_count": 2200,
+              "comment_count": 67
+            },
+            {
+              "id": "post6",
+              "thumbnail_url": "https://example.com/post6_thumbnail.jpg",
+              "caption": "Kitap okuma zamanı #kitap #okuma",
+              "like_count": 1300,
+              "comment_count": 40
+            }
+          ]
+        }
+     */
     public static class Item {
         @JsonProperty("id")
         private String id;

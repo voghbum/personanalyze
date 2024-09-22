@@ -12,11 +12,10 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.io.IOException;
-import java.util.Map;
 
 @RestController
 @Scope("prototype")
-@RequestMapping("/api/")
+@RequestMapping("/api")
 public class AnalyzeController {
     private static final Logger LOG = LoggerFactory.getLogger(AnalyzeController.class);
     private final AnalyzeService analyzeService;
@@ -27,7 +26,7 @@ public class AnalyzeController {
         this.roastService = roastService;
     }
 
-    @PostMapping("analyze/")
+    @PostMapping("/analyze")
     public ResponseEntity<AnalyzeResponse> analyze(@RequestBody UserRequest request) {
         // username ile işlemleri burada yapın
         String username = request.getUsername();
@@ -38,7 +37,7 @@ public class AnalyzeController {
         return ResponseEntity.ok(response);
     }
 
-    @GetMapping("roast/")
+    @GetMapping("/roast")
     public ResponseEntity<RoastResponse> process(@RequestParam("username") String username) throws IOException, InterruptedException {
         var result = roastService.roast(username);
         LOG.info("roast result for user: {} -> {}", username, result);

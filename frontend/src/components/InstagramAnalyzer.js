@@ -8,56 +8,16 @@ import { motion, AnimatePresence } from 'framer-motion'; // animasyyonlar ve ge�
 const InstagramAnalyzer = () => {
   const [username, setUsername] = useState('');
   const [showTip, setShowTip] = useState(false);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState(null);
   const router = useRouter();
-
-//username kullanıcıdan alınır ve instagram kullanıcı adını saklar.
-//showtip, 3 saniye sonra true olur ve tip kullanıcıya gösterilir.
-//loading, api isteği yapılırken true olur ve analiz ediliyor yazısını gösterir. Yükleme durumunu kullanıcıya gösterir.
-//error, hata mesajını gösterir.
-//router, sonuçlar sayfasına yönlendirir.
-
 
   useEffect(() => {
     const timer = setTimeout(() => setShowTip(true), 1000); // 3 saniye sonra showtip true olur ve tip kullanıcıya gösterilir. Burada 3 saniye alınıyor.
     return () => clearTimeout(timer);
   }, []);
 
-
-  //Form gönderildiiğinde çalışır.
-  const handleSubmit = async (e) => {
+  const handleSubmit = (e) => {
     e.preventDefault();
-    if (loading) return; // Eğer zaten analiz yapılıyorsa, yeni istek gönderme
-    
-    setLoading(true);
-    setError(null);
-  
-    try {
-      console.log('Sending request for username:', username);
-      const response = await fetch('http://localhost:8000/api/analyze/', { // api/analyze/ kısmında backend kısmında oluşturduğumuz route'a yönlendirir.
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': 'Basic ' + btoa('anan:anan')
-        },
-        body: JSON.stringify({ username }),
-      });
-  
-      const data = await response.json();
-  
-      if (!response.ok) {
-        throw new Error(data.error || `API request failed with status ${response.status}`);
-      }
-  
-      console.log('Received data:', data);
-      router.push(`/results/${username}`); //Analiz sonuclarını gösteren sayfaya yönlendirir.
-    } catch (err) {
-      console.error('Error:', err);
-      setError(err.message || 'An error occurred while analyzing the profile');
-    } finally {
-      setLoading(false);
-    }
+    router.push(`/results/${username}`);
   };
 
   return (
@@ -100,14 +60,11 @@ const InstagramAnalyzer = () => {
           <button 
             type="submit"
             className="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-gradient-to-r from-purple-500 via-pink-500 to-yellow-500 hover:from-purple-600 hover:via-pink-600 hover:to-yellow-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-pink-500 transition-all duration-200"
-            disabled={loading}
           >
-            {loading ? 'Analiz Ediliyor...' : 'Analiz Et'}
+            Analiz Et
           </button>
         </div>
       </motion.form>
-
-      {error && <p className="text-red-500 text-center">{error}</p>}
 
       <AnimatePresence>
         {showTip && (

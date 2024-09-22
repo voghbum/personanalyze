@@ -27,7 +27,7 @@ public class RoastService {
 
     public RoastResponse roast(String username) throws IOException, InterruptedException {
         RoastResponse result = new RoastResponse();
-        UserPosts data = instaProvider.getProfilePosts(username);
+        UserPosts data = instaProvider.getUserInfo(username);
 
         var allSingleImages = data.getData().getItems().stream()
                 .map(p -> p.getImageVersions().getItems())
