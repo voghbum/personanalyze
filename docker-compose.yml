@@ -1,0 +1,33 @@
+version: '3.8'
+services:
+  personanalyze_db_postgres:
+    image: postgres
+    container_name: personanalyze_db_postgres
+    ports:
+      - "5435:5432"
+    restart: always
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=Test12345*
+      - POSTGRES_DB=personanalyze_db
+    networks:
+      - personanalyze-network
+
+  personanalyze-app:
+    image: personanalyze-app
+    ports:
+      - "8000:8000"
+    environment:
+      - RAPIDAPI_API_KEY=
+      - OPENAI_API_KEY=
+      - DB_URL=jdbc:postgresql://personanalyze_db_postgres:5432/personanalyze_db
+      - DB_USERNAME=postgres
+      - DB_PASSWORD=Test12345*
+    depends_on:
+      - personanalyze_db_postgres
+    networks:
+      - personanalyze-network
+
+networks:
+  personanalyze-network:
+    driver: bridge

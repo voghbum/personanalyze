@@ -38,6 +38,10 @@ public class AnalyzeService {
             var fromDb = pir.findByNickName(username);
             try {
                 result = fromDb.getUserProfile();
+                if(result == null) {
+                    //todo: GEÇİCİ! Muhtemelen bir proxy yapacaz buraya. Veyahut tabloları ayrıştırınca gerek kalmaz.
+                    throw new IllegalArgumentException();
+                }
             } catch (JsonProcessingException | IllegalArgumentException e) {
                 result = instaProvider.getUserInfo(username);
                 fromDb.setUserProfile(result);
@@ -61,6 +65,10 @@ public class AnalyzeService {
             var fromDb = pir.findByNickName(username);
             try {
                 result = fromDb.getUserPosts();
+                if(result == null) {
+                    //todo: GEÇİCİ! Muhtemelen bir proxy yapacaz buraya. Veyahut tabloları ayrıştırınca gerek kalmaz.
+                    throw new IllegalArgumentException();
+                }
             } catch (JsonProcessingException | IllegalArgumentException e) {
                 result = instaProvider.getUserPosts(username).getData().getItems();
                 fromDb.setUserPosts(result);
@@ -84,6 +92,10 @@ public class AnalyzeService {
             var fromDb = pir.findByNickName(username);
             try {
                 result = fromDb.getUserStories();
+                if(result == null) {
+                    //todo: GEÇİCİ! Muhtemelen bir proxy yapacaz buraya. Veyahut tabloları ayrıştırınca gerek kalmaz.
+                    throw new IllegalArgumentException();
+                }
             } catch (JsonProcessingException | IllegalArgumentException e) {
                 result = instaProvider.getUserStories(username);
                 fromDb.setUserStories(result);
@@ -101,6 +113,10 @@ public class AnalyzeService {
     }
 
     private void logFetchedData(Object data) {
+        if(data == null) {
+            LOG.warn("data is null!");
+            return;
+        }
         String resultJson = null;
         try {
             resultJson = objectMapper.writeValueAsString(data);
