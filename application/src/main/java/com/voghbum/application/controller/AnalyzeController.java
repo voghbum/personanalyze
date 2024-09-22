@@ -1,7 +1,6 @@
 package com.voghbum.application.controller;
 
 import com.voghbum.application.data.request.UserRequest;
-import com.voghbum.application.data.response.AnalyzeResponse;
 import com.voghbum.application.data.response.RoastResponse;
 import com.voghbum.application.service.AnalyzeService;
 import com.voghbum.application.service.RoastService;
@@ -15,13 +14,9 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 
-/*
-fetchUserFeed için -> "/api/user_feed"
-fetchUserInfo için -> "/api/user_info"
-fetchUserStories için -> "/api/user_stories"
- */
 @RestController
 @Scope("prototype")
 @RequestMapping("/api")
@@ -37,34 +32,43 @@ public class AnalyzeController {
 
     @PostMapping("/user_info")
     public ResponseEntity<UserProfile> userProfile(@RequestBody UserRequest request) {
-        // username ile işlemleri burada yapın
         String username = request.getUsername();
-        var response = analyzeService.getUserInfo(username);
-        return ResponseEntity.ok(response);
+        try {
+            var response = analyzeService.getUserInfo(username);
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            return ResponseEntity.internalServerError().body(new UserProfile());
+        }
     }
 
     @PostMapping("/user_feed")
     public ResponseEntity<List<UserPosts.Item>> userFeed(@RequestBody UserRequest request) {
-        // username ile işlemleri burada yapın
         String username = request.getUsername();
-        var response = analyzeService.getUserFeed(username);
-        // İşlenmiş veriyi JSON formatında geri gönder
-        return ResponseEntity.ok(response);
+        try {
+            var response = analyzeService.getUserFeed(username);
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            return ResponseEntity.internalServerError().body(new ArrayList<>());
+        }
     }
 
     @PostMapping("/user_stories")
     public ResponseEntity<UserStories> userStories(@RequestBody UserRequest request) {
-        // username ile işlemleri burada yapın
         String username = request.getUsername();
-        var response = analyzeService.getUserStories(username);
-        // İşlenmiş veriyi JSON formatında geri gönder
-        return ResponseEntity.ok(response);
+        try {
+            var response = analyzeService.getUserStories(username);
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            return ResponseEntity.internalServerError().body(new UserStories());
+        }
     }
 
     @PostMapping("/roast")
     public ResponseEntity<RoastResponse> process(@RequestBody UserRequest request) throws IOException, InterruptedException {
         String username = request.getUsername();
-        var result = roastService.roast(username);
+        //var result = roastService.roast(username);
+        var result = new RoastResponse();
+        result.setAiResult("Arkadaşın, sosyal medya için bir stilde takılamayan ve modaya uygun kıyafetleri asla bulamayan tiplerden biri. İkinci fotoğraftaki gömlek, sanki bir paletin içine düşüp çıkmış gibi, ama herhalde onun için bu, \"sanat eseri\" sayılır. İlk fotoğraftaki ciddi ifadesiyle aslında içten içe gülmekten başka bir şey yapmadığını düşünüyorum. Üçüncü fotoğraftaki karizmatik havası ise sadece güneş gözlüklerine dayanıyor; yoksa Amsterdam'dan dönerken kaybettiği tarzını bulmaktan aciz kalmış durumda. Onun bu özgüveni ve absürt moda anlayışı, bizim için bir komedi kaynağı!\n" + "\n");
         LOG.info("roast result for user: {} -> {}", username, result);
         return ResponseEntity.ok(result);
     }

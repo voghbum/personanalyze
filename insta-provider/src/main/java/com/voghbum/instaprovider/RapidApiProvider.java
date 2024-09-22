@@ -15,6 +15,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
+import org.springframework.web.reactive.function.client.WebClientResponseException;
 
 @Service
 public class RapidApiProvider implements InstaProvider {
@@ -39,11 +40,25 @@ public class RapidApiProvider implements InstaProvider {
 
     @Override
     public UserPosts getUserPosts(String username) {
-        return webClient.get()
-                .uri("/v1.2/posts?username_or_id_or_url={username}", username)
-                .retrieve()
-                .bodyToMono(String.class)
-                .map(this::parseUserPosts).block();
+        try {
+            return webClient.get()
+                    .uri("/v1.2/posts?username_or_id_or_url={username}", username)
+                    .retrieve()
+                    .bodyToMono(String.class)
+                    .map(this::parseUserPosts).block();
+        } catch (WebClientResponseException.Forbidden forbidden) {
+            var resultForPrivate = new UserPosts();
+            var data = new UserPosts.Data();
+            var user = new UserPosts.User();
+            user.setPrivate(true);
+            user.setUsername(username);
+            user.setFullName(username);
+            user.setVerified(false);
+            data.setUser(user);
+            data.setItems(new ArrayList<>());
+            resultForPrivate.setData(data);
+            return resultForPrivate;
+        }
     }
 
     @Override
