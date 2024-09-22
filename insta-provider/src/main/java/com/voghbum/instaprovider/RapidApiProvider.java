@@ -29,7 +29,7 @@ public class RapidApiProvider implements InstaProvider {
     }
 
     @Override
-    public UserProfile getUserPosts(String username) {
+    public UserProfile getUserInfo(String username) {
         return webClient.get()
                 .uri("/v1/info?username_or_id_or_url={username}&include_about=true", username)
                 .retrieve()
@@ -38,7 +38,7 @@ public class RapidApiProvider implements InstaProvider {
     }
 
     @Override
-    public UserPosts getUserInfo(String username) {
+    public UserPosts getUserPosts(String username) {
         return webClient.get()
                 .uri("/v1.2/posts?username_or_id_or_url={username}", username)
                 .retrieve()

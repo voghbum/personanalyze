@@ -5,6 +5,7 @@ import { useParams } from 'next/navigation';
 import { User, Image as LucideImage, MessageCircle, Heart, Link as LinkIcon, Camera, Lock, ArrowUpDown, ArrowRight } from 'lucide-react';
 import Image from 'next/image';
 import { motion } from 'framer-motion';
+import RoastSection from './components/RoastSection';
 
 const LoadingAnimation = () => (
   <div className="flex justify-center items-center h-screen">
@@ -14,58 +15,111 @@ const LoadingAnimation = () => (
 
 const ResultsPage = () => {
   const { username } = useParams();
-  const [data, setData] = useState(null);
-  const [loading, setLoading] = useState(true);
+  const [userFeed, setUserFeed] = useState(null);
+  const [userInfo, setUserInfo] = useState(null);
+  const [stories, setStories] = useState(null);
+  const [loadingFeed, setLoadingFeed] = useState(true);
+  const [loadingInfo, setLoadingInfo] = useState(true);
+  const [loadingStories, setLoadingStories] = useState(true);
   const [error, setError] = useState(null);
   const dataFetchedRef = useRef(false);
   const [filteredPosts, setFilteredPosts] = useState([]);
   const [filterCriteria, setFilterCriteria] = useState('likes');
   const [sortOrder, setSortOrder] = useState('desc');
-  const [analysisType, setAnalysisType] = useState('simple');
+  const [roastData, setRoastData] = useState(null);
+  const [loadingRoast, setLoadingRoast] = useState(true);
 
-  const fetchData = async (type) => {
+  const fetchUserFeed = async () => {
     try {
-      setLoading(true);
-      setError(null);
-
-      const response = await fetch(`/api/analyze`, {
+      setLoadingFeed(true);
+      const response = await fetch(`/api/user_feed`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ username, analysis_type: type }),
+        body: JSON.stringify({ username }),
       });
-
-      if (!response.ok) throw new Error('Failed to fetch data');
-
+      if (!response.ok) throw new Error('Failed to fetch user feed');
       const result = await response.json();
-      setData(result);
-      setFilteredPosts(result.user_feed);
-      console.log("user feed: ", result.user_feed)
-      console.log("stories: ", result.stories);
-      console.log("user info: ", result.user_info);
+      setUserFeed(result);
+      setFilteredPosts(result);
     } catch (error) {
-      console.error('Error fetching data:', error);
+      console.error('Error fetching user feed:', error);
       setError(error.message);
     } finally {
-      setLoading(false);
+      setLoadingFeed(false);
+    }
+  };
+
+  const fetchUserInfo = async () => {
+    try {
+      setLoadingInfo(true);
+      const response = await fetch(`/api/user_info`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ username }),
+      });
+      if (!response.ok) throw new Error('Failed to fetch user info');
+      const result = await response.json();
+      setUserInfo(result);
+    } catch (error) {
+      console.error('Error fetching user info:', error);
+      setError(error.message);
+    } finally {
+      setLoadingInfo(false);
+    }
+  };
+
+  const fetchUserStories = async () => {
+    try {
+      setLoadingStories(true);
+      const response = await fetch(`/api/user_stories`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ username }),
+      });
+      if (!response.ok) throw new Error('Failed to fetch user stories');
+      const result = await response.json();
+      setStories(result);
+    } catch (error) {
+      console.error('Error fetching user stories:', error);
+      setError(error.message);
+    } finally {
+      setLoadingStories(false);
+    }
+  };
+
+  const fetchRoastData = async () => {
+    try {
+      setLoadingRoast(true);
+      const response = await fetch(`/api/roast`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ username }),
+      });
+      if (!response.ok) throw new Error('Failed to fetch roast data');
+      const result = await response.json();
+      setRoastData(result);
+    } catch (error) {
+      console.error('Error fetching roast data:', error);
+      setError(error.message);
+    } finally {
+      setLoadingRoast(false);
     }
   };
 
   useEffect(() => {
     if (dataFetchedRef.current) return;
     dataFetchedRef.current = true;
-    fetchData(analysisType);
+    fetchUserFeed();
+    fetchUserInfo();
+    fetchUserStories();
+    fetchRoastData();
   }, [username]);
 
-  const handleDetailedAnalysis = () => {
-    setAnalysisType('detailed');
-    fetchData('detailed');
-  };
-
   useEffect(() => {
-    if (data && data.user_feed) {
-      filterAndSortPosts(data.user_feed);
+    if (userFeed) {
+      filterAndSortPosts(userFeed);
     }
-  }, [data, filterCriteria, sortOrder]);
+  }, [userFeed, filterCriteria, sortOrder]);
 
   const filterAndSortPosts = (posts) => {
     let sorted = [...posts];
@@ -87,24 +141,29 @@ const ResultsPage = () => {
     setFilteredPosts(sorted.slice(0, 6));
   };
 
-  if (loading) return <LoadingAnimation />;
   if (error) return <div className="text-center text-red-500">{error}</div>;
-  if (!data) return <div className="text-center">Veri bulunamadı.</div>;
 
-  const { user_info, stories } = data;
-  console.log("user_info: ", user_info)
-  console.log("stories: ", stories)
   return (
     <div className="min-h-screen bg-gradient-to-br from-indigo-900 via-purple-900 to-pink-700 text-white py-8 px-4">
       <div className="max-w-6xl mx-auto">
-        <ProfileHeader user={user_info} />
-        {user_info.is_private ? (
-          <PrivateAccountMessage username={user_info.username} />
+        {loadingInfo ? (
+          <LoadingAnimation />
+        ) : (
+          <ProfileHeader user={userInfo} />
+        )}
+        {userInfo && userInfo.is_private ? (
+          <PrivateAccountMessage username={userInfo.username} />
         ) : (
           <>
-            <StoriesSection stories={stories} />
-            {analysisType === 'simple' && (
-              <DetailedAnalysisPromo handleDetailedAnalysis={handleDetailedAnalysis} />
+            {loadingRoast ? (
+              <LoadingAnimation />
+            ) : (
+              <RoastSection roastData={roastData} />
+            )}
+            {loadingStories ? (
+              <LoadingAnimation />
+            ) : (
+              <StoriesSection stories={stories} />
             )}
             <FilterControls
               filterCriteria={filterCriteria}
@@ -112,7 +171,11 @@ const ResultsPage = () => {
               sortOrder={sortOrder}
               setSortOrder={setSortOrder}
             />
-            <TopPostsSection feed={filteredPosts} />
+            {loadingFeed ? (
+              <LoadingAnimation />
+            ) : (
+              <TopPostsSection feed={filteredPosts} />
+            )}
           </>
         )}
       </div>
@@ -299,29 +362,6 @@ const PrivateAccountMessage = ({ username }) => (
     <p className="mt-4 text-sm text-gray-400">
       Gizli hesapların içeriği sadece onaylanmış takipçiler tarafından görüntülenebilir.
     </p>
-  </motion.div>
-);
-
-const DetailedAnalysisPromo = ({ handleDetailedAnalysis }) => (
-  <motion.div
-    initial={{ opacity: 0, y: 50 }}
-    animate={{ opacity: 1, y: 0 }}
-    transition={{ duration: 0.5 }}
-    className="bg-gradient-to-r from-pink-500 to-purple-600 rounded-lg shadow-lg p-6 my-8 text-white"
-  >
-    <h2 className="text-2xl font-bold mb-4">Detaylı Analiz ile Profilinizi Derinlemesine Keşfedin!</h2>
-    <p className="mb-6">Tüm gönderilerinizin analizi, etkileşim oranları, en iyi performans gösteren içerikler ve daha fazlası...</p>
-    <div className="flex justify-center">
-      <motion.button
-        onClick={handleDetailedAnalysis}
-        className="bg-white text-purple-600 font-bold py-3 px-8 rounded-full hover:bg-purple-100 transition duration-300 ease-in-out transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-opacity-50"
-        whileHover={{ scale: 1.05 }}
-        whileTap={{ scale: 0.95 }}
-      >
-        Detaylı Analizi Başlat
-        <ArrowRight className="inline-block ml-2" />
-      </motion.button>
-    </div>
   </motion.div>
 );
 

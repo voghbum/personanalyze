@@ -8,7 +8,7 @@ public class RoastResponse {
     @JsonProperty("image_urls")
     private List<String> imageUrls;
 
-    @JsonProperty("image_urls")
+    @JsonProperty("ai_result")
     private String aiResult;
 
     public void setImageUrls(List<String> imageUrls) {
