@@ -31,21 +31,17 @@ public class AnalyzeService {
         this.pir = repository;
     }
 
-    public UserProfile getUserInfo(String username) throws IOException, InterruptedException {
+    public synchronized UserProfile getUserInfo(String username) throws IOException, InterruptedException {
         boolean profileExistsInDb = pir.existsByNickName(username);
         UserProfile result;
         if(profileExistsInDb) {
             var fromDb = pir.findByNickName(username);
             try {
                 result = fromDb.getUserProfile();
-            } catch (JsonProcessingException e) {
+            } catch (JsonProcessingException | IllegalArgumentException e) {
                 result = instaProvider.getUserInfo(username);
-                var persisting = new ProfileInformation();
-                persisting.setUserProfile(result);
-                persisting.setNickName(username);
-                persisting.setId(fromDb.getId());
-                // todo: Burada, sadece ilgili column'u update edecek şekilde yapmalıyız!
-                pir.createOrUpdate(persisting);
+                fromDb.setUserProfile(result);
+                pir.save(fromDb);
             }
         } else {
             result = instaProvider.getUserInfo(username);
@@ -54,24 +50,21 @@ public class AnalyzeService {
             persisting.setNickName(username);
             pir.save(persisting);
         }
+        logFetchedData(result);
         return result;
     }
 
-    public List<UserPosts.Item> getUserFeed(String username) throws IOException, InterruptedException {
+    public synchronized List<UserPosts.Item> getUserFeed(String username) throws IOException, InterruptedException {
         boolean profileExistsInDb = pir.existsByNickName(username);
         List<UserPosts.Item> result;
         if(profileExistsInDb) {
             var fromDb = pir.findByNickName(username);
             try {
                 result = fromDb.getUserPosts();
-            } catch (JsonProcessingException e) {
+            } catch (JsonProcessingException | IllegalArgumentException e) {
                 result = instaProvider.getUserPosts(username).getData().getItems();
-                var persisting = new ProfileInformation();
-                persisting.setUserPosts(result);
-                persisting.setNickName(username);
-                persisting.setId(fromDb.getId());
-                // todo: Burada, sadece ilgili column'u update edecek şekilde yapmalıyız!
-                pir.createOrUpdate(persisting);
+                fromDb.setUserPosts(result);
+                pir.save(fromDb);
             }
         } else {
             result = instaProvider.getUserPosts(username).getData().getItems();
@@ -80,24 +73,21 @@ public class AnalyzeService {
             persisting.setNickName(username);
             pir.save(persisting);
         }
+        logFetchedData(result);
         return result;
     }
 
-    public UserStories getUserStories(String username) throws IOException, InterruptedException {
+    public synchronized UserStories getUserStories(String username) throws IOException, InterruptedException {
         boolean profileExistsInDb = pir.existsByNickName(username);
         UserStories result;
         if(profileExistsInDb) {
             var fromDb = pir.findByNickName(username);
             try {
                 result = fromDb.getUserStories();
-            } catch (JsonProcessingException e) {
+            } catch (JsonProcessingException | IllegalArgumentException e) {
                 result = instaProvider.getUserStories(username);
-                var persisting = new ProfileInformation();
-                persisting.setUserStories(result);
-                persisting.setNickName(username);
-                persisting.setId(fromDb.getId());
-                // todo: Burada, sadece ilgili column'u update edecek şekilde yapmalıyız!
-                pir.createOrUpdate(persisting);
+                fromDb.setUserStories(result);
+                pir.save(fromDb);
             }
         } else {
             result = instaProvider.getUserStories(username);
@@ -106,6 +96,7 @@ public class AnalyzeService {
             persisting.setNickName(username);
             pir.save(persisting);
         }
+        logFetchedData(result);
         return result;
     }
 

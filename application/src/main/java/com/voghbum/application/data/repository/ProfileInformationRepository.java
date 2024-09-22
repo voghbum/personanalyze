@@ -15,8 +15,10 @@ import java.util.List;
 public interface ProfileInformationRepository extends CrudRepository<ProfileInformation, Long> {
     ProfileInformation findByNickName(String nickName);
     boolean existsByNickName(String nickName);
-    void createOrUpdate(ProfileInformation profileInformation);
+/*
+    todo: Bunlar yazılmalı
     void updateUserProfileByNickName(String nickName, UserProfile profileInformation);
     void updateUserPostsByNickName(String nickName, List<UserPosts.Item> profileInformation);
     void updateUserStoriesByNickName(String nickName, UserStories profileInformation);
+*/
 }
