@@ -15,8 +15,8 @@ const ProfilePostsSection = ({ stories, userFeed, loading }) => {
     }
   }, [userFeed, filterCriteria, sortOrder]);
 
-  const filterAndSortPosts = (posts) => {
-    let sorted = [...posts].sort((a, b) => {
+  const filterAndSortPosts = (userFeed) => {
+    let sorted = userFeed.user_posts.sort((a, b) => {
       if (filterCriteria === 'likes') {
         return sortOrder === 'desc' ? b.like_count - a.like_count : a.like_count - b.like_count;
       } else {

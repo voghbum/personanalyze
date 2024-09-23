@@ -1,4 +1,4 @@
-package com.voghbum.aiprovider.commons;
+package com.voghbum.aiprovider.commons.data;
 
 import java.util.List;
 

@@ -5,11 +5,13 @@ const useUserData = (username) => {
   const [userFeed, setUserFeed] = useState(null);
   const [stories, setStories] = useState(null);
   const [roastData, setRoastData] = useState(null);
+  const [shipData, setShipData] = useState(null);
   const [loading, setLoading] = useState({
     userInfo: true,
     userFeed: true,
     stories: true,
     roast: true,
+    ship: true,
   });
   const [error, setError] = useState(null);
   const dataFetchedRef = useRef(false);
@@ -40,9 +42,10 @@ const useUserData = (username) => {
     fetchData('user_feed', setUserFeed, 'userFeed');
     fetchData('user_stories', setStories, 'stories');
     fetchData('roast', setRoastData, 'roast');
+    fetchData('ship', setShipData, 'ship');
   }, [username]);
 
-  return { userInfo, userFeed, stories, roastData, loading, error };
+  return { userInfo, userFeed, stories, roastData, shipData, loading, error };
 };
 
 export default useUserData;

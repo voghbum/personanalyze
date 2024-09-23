@@ -4,7 +4,7 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.voghbum.instaprovider.data.UserProfile;
-import com.voghbum.instaprovider.data.UserPosts;
+import com.voghbum.instaprovider.data.UserFeed;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -39,7 +39,7 @@ public class RapidApiProvider implements InstaProvider {
     }
 
     @Override
-    public UserPosts getUserPosts(String username) {
+    public UserFeed getUserPosts(String username) {
         try {
             return webClient.get()
                     .uri("/v1.2/posts?username_or_id_or_url={username}", username)
@@ -47,16 +47,8 @@ public class RapidApiProvider implements InstaProvider {
                     .bodyToMono(String.class)
                     .map(this::parseUserPosts).block();
         } catch (WebClientResponseException.Forbidden forbidden) {
-            var resultForPrivate = new UserPosts();
-            var data = new UserPosts.Data();
-            var user = new UserPosts.User();
-            user.setPrivate(true);
-            user.setUsername(username);
-            user.setFullName(username);
-            user.setVerified(false);
-            data.setUser(user);
-            data.setItems(new ArrayList<>());
-            resultForPrivate.setData(data);
+            var resultForPrivate = new UserFeed();
+            resultForPrivate.setUserPosts(new ArrayList<>());
             return resultForPrivate;
         }
     }
@@ -112,18 +104,27 @@ public class RapidApiProvider implements InstaProvider {
         }
     }
 
-    private UserPosts parseUserPosts(String responseBody) {
+    private UserFeed parseUserPosts(String responseBody) {
         try {
             JsonNode rootNode = objectMapper.readTree(responseBody);
-            JsonNode dataNode = rootNode.get("data");
-            UserPosts userPosts = new UserPosts();
-            UserPosts.Data data = new UserPosts.Data();
+            JsonNode itemsNode = rootNode.get("data").get("items");
+            UserFeed userFeed = new UserFeed();
+            ArrayList<UserFeed.UserPost> userPosts = new ArrayList<>();
+            userFeed.setUserPosts(userPosts);
+            userFeed.setPaginationToken(rootNode.get("pagination_token").asText());
 
-            data.setCount(dataNode.get("count").asInt());
-            data.setItems(objectMapper.convertValue(dataNode.get("items"), new TypeReference<List<UserPosts.Item>>() {}));
-            userPosts.setData(data);
-            return userPosts;
-        } catch (Exception e) {
+            for(JsonNode item : itemsNode) {
+                UserFeed.UserPost userPost = new UserFeed.UserPost();
+                userPost.setCaption(item.get("caption").asText());
+                userPost.setLikeCount(item.get("like_count").asInt());
+                userPost.setCommentCount(item.get("comment_count").asInt());
+                userPost.setTakenAt(item.get("taken_at").asText());
+                userPost.setId(item.get("id").asInt());
+                userPost.setThumbnailUrl(item.get("thumbnail_url").asText());
+                userPosts.add(userPost);
+            }
+            return userFeed;
+        } catch (Throwable e) {
             throw new RuntimeException("Failed to parse ProfilePostsData", e);
         }
     }

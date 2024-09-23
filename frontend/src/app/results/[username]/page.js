@@ -5,13 +5,14 @@ import { useParams } from 'next/navigation';
 import useUserData from './hooks/useUserData';
 import ProfileInfoSection from './components/ProfileInfoSection.js';
 import RoastSection from './components/RoastSection';
+import ShipSection from './components/ShipSection';
 import ProfilePostsSection from './components/ProfilePostsSection';
 import LoadingAnimation from './components/LoadingAnimation';
 import PrivateAccountMessage from "./components/PrivateAccountMessage";
 
 const ResultsPage = () => {
   const { username } = useParams();
-  const { userInfo, userFeed, stories, roastData, loading, error } = useUserData(username);
+  const { userInfo, userFeed, stories, roastData, shipData, loading, error } = useUserData(username);
 
   if (error) return <div className="text-center text-red-500">{error}</div>;
 
@@ -23,14 +24,19 @@ const ResultsPage = () => {
         ) : (
           <ProfileInfoSection userInfo={userInfo} />
         )}
-          {userInfo && userInfo.is_private ? (
-              <PrivateAccountMessage username={userInfo.username} />
-          ) : (
+        {userInfo && userInfo.is_private ? (
+          <PrivateAccountMessage username={userInfo.username} />
+        ) : (
           <>
             {loading.roast ? (
               <LoadingAnimation />
             ) : (
               <RoastSection roastData={roastData} />
+            )}
+            {loading.ship ? (
+              <LoadingAnimation />
+            ) : (
+              <ShipSection shipData={shipData} />
             )}
             <ProfilePostsSection
               stories={stories}
