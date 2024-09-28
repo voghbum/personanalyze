@@ -8,6 +8,7 @@ import org.springframework.context.annotation.ComponentScan;
 @ComponentScan(basePackages = {"com.voghbum",})
 public class PersonanalyzeWebServiceApplication {
     public static void main(String[] args) {
+        System.setProperty("file.encoding", "UTF-8");
         SpringApplication.run(PersonanalyzeWebServiceApplication.class, args);
     }
 }

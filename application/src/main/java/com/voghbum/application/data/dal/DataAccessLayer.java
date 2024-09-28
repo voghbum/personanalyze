@@ -60,10 +60,10 @@ public class DataAccessLayer {
         }
     }
 
-    public UserFeed getUserFeed(String nickName) throws IOException, InterruptedException {
+    public UserFeed getUserFeed(String nickName, int iterationCount) throws IOException, InterruptedException {
         Optional<UserFeedEntity> fromDb = userFeedRepository.findByNickName(nickName);
         if(fromDb.isEmpty()) {
-            UserFeed fromApi = instaProvider.getUserPosts(nickName);
+            UserFeed fromApi = instaProvider.getUserPosts(nickName, iterationCount);
             UserFeedEntity persisting = new UserFeedEntity();
             persisting.setNickName(nickName);
             persisting.setUserFeed(fromApi);
@@ -73,10 +73,15 @@ public class DataAccessLayer {
         }
 
         try {
-            return fromDb.get().getUserFeed();
-        } catch (JsonProcessingException e) {
+            var postsFromDb = fromDb.get().getUserFeed();
+            if(postsFromDb.getUserPosts().size() >= iterationCount * 12 || postsFromDb.getPaginationToken() == null) {
+                return postsFromDb;
+            } else {
+                throw new IllegalArgumentException("not sufficient length");
+            }
+        } catch (JsonProcessingException | IllegalArgumentException e) {
             UserFeedEntity updating = fromDb.get();
-            UserFeed fromApi = instaProvider.getUserPosts(nickName);
+            UserFeed fromApi = instaProvider.getUserPosts(nickName, iterationCount);
             updating.setUserFeed(fromApi);
             updating.setLastUpdateTime(LocalDateTime.now());
             userFeedRepository.save(updating);

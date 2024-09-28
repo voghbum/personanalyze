@@ -1,44 +1,60 @@
 package com.voghbum.aiprovider.openai;
 
-import com.voghbum.aiprovider.commons.data.RoastInput;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.ser.impl.SimpleBeanPropertyFilter;
+import com.fasterxml.jackson.databind.ser.impl.SimpleFilterProvider;
+import com.voghbum.aiprovider.commons.data.AiInput;
+import com.voghbum.aiprovider.configuration.PromptValues;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
-public class OpenaiJsonBodyGenerator {
+@Component
+class OpenaiJsonBodyGenerator {
+    private static final Logger LOG = LoggerFactory.getLogger(OpenaiJsonBodyGenerator.class);
+    private final PromptValues promptValues;
 
-    public String generate(RoastInput input, String question) {
+    public OpenaiJsonBodyGenerator(PromptValues promptValues) {
+        this.promptValues = promptValues;
+    }
+
+    public String generate(AiInput input, String question) throws JsonProcessingException {
+        ObjectMapper objectMapper = new ObjectMapper();
         var jsonMap = new HashMap<String, Object>();
         jsonMap.put("model", "gpt-4o-mini");
         var messagesList = new ArrayList<>();
-        var sysRole = new HashMap<>();
+        var sysRole = generateAdminRole(question);
         var userRole = generateUserRole(input);
         jsonMap.put("messages", messagesList);
         messagesList.add(userRole);
-        var contentList = new ArrayList<>();
-
-        var contentText = new HashMap<>();
-        contentText.put("type", "text");
-        contentText.put("text", "Sen, sivri dilli ve kışkırtıcı tarzınla tanınan profesyonel bir yorumcusun. Görevin, insanların intagram profillerindeki fotoğraflara bakarak kişiliklerini değerlendirmek. Sivri ol ve kışkırtıcı ol, biraz da acımasız ol. Ama sakın basmakalıp ya da utandırıcı olma. İşte güzel bir \"roast\" (laf sokma) denemesi:\n" + "Tamam, bunu parçalayalım. Bir yığın ev bitkisinin arasında, çıplak ayakla oturmuş, yataktan yeni çıkmış gibi görünüyorsun. Bej tişörtün, \"Duvar kağıdına karışmaya çalışıyorum\" havasını veriyor. Siyah pantolonlar mı? Onlar da \"Uyanıp uygun bir şey bulmaya üşendim\" diye bağırıyor. Ama hey, en azından rahat görünüyorsun. Rahatlık önemli tabii, değil mi? Belki de bir moda ifadesi yapmaya çalışırken pek değil.");
-        contentList.add(contentText);
-
-        List<String> allImageUrls = postsData.getImages().stream().map(RoastInput.RoastImage::getImageUrl).toList();
-
-        for (String imageUrl : allImageUrls) {
-            var contentImage = new HashMap<>();
-            contentImage.put("type", "image_url");
-            contentImage.put("image_url", Map.of("url", imageUrl));
-            contentList.add(contentImage);
-        }
+        messagesList.add(sysRole);
 
         return objectMapper.writeValueAsString(jsonMap);
     }
 
-    private String generateUserRole(RoastInput input) {
-        var result = new HashMap<>();
+    private Map<String, Object> generateUserRole(AiInput input) throws JsonProcessingException {
+        ObjectMapper objectMapper = new ObjectMapper();
+        var userRole = new HashMap<String, Object>();
         userRole.put("role", "user");
-        userRole.put("content", contentList);
+        SimpleFilterProvider filterProvider = new SimpleFilterProvider().addFilter("excludeImageUrls",
+                SimpleBeanPropertyFilter.serializeAllExcept("imageUrl"));
+        objectMapper.setFilterProvider(filterProvider);
+        String filteredAiInput = objectMapper.writeValueAsString(input);
+        userRole.put("content", filteredAiInput);
+
+        return userRole;
+    }
+
+    private Map<String, String> generateAdminRole(String question) {
+        var adminRole = new HashMap<String, String>();
+        String questionWithQuoata = "\"\"\"" + question + "\"\"\"";
+        adminRole.put("role", "system");
+        adminRole.put("content", promptValues.SYS_COMMON_INS + questionWithQuoata);
+        return adminRole;
     }
 }

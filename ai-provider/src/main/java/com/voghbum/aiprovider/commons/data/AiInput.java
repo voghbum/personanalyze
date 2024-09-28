@@ -1,9 +1,11 @@
 package com.voghbum.aiprovider.commons.data;
 
+import com.fasterxml.jackson.annotation.JsonFilter;
 import java.util.List;
 
-public class RoastInput {
-    private List<RoastImage> images;
+@JsonFilter("excludeImageUrls")
+public class AiInput {
+    private List<AiInputImage> images;
     private String biography;
     private String category;
     private String fullName;
@@ -11,11 +13,11 @@ public class RoastInput {
     private int followerCount;
     private int followingCount;
 
-    public List<RoastImage> getImages() {
+    public List<AiInputImage> getImages() {
         return images;
     }
 
-    public void setImages(List<RoastImage> imageUrls) {
+    public void setImages(List<AiInputImage> imageUrls) {
         this.images = imageUrls;
     }
 
@@ -65,44 +67,5 @@ public class RoastInput {
 
     public void setFollowingCount(int followingCount) {
         this.followingCount = followingCount;
-    }
-
-    public static class RoastImage {
-        private String imageUrl;
-        private String caption;
-        private int likeCount;
-        private String location;
-
-        public String getImageUrl() {
-            return imageUrl;
-        }
-
-        public void setImageUrl(String imageUrl) {
-            this.imageUrl = imageUrl;
-        }
-
-        public String getCaption() {
-            return caption;
-        }
-
-        public void setCaption(String caption) {
-            this.caption = caption;
-        }
-
-        public int getLikeCount() {
-            return likeCount;
-        }
-
-        public void setLikeCount(int likeCount) {
-            this.likeCount = likeCount;
-        }
-
-        public String getLocation() {
-            return location;
-        }
-
-        public void setLocation(String location) {
-            this.location = location;
-        }
     }
 }

@@ -38,11 +38,11 @@ const useUserData = (username) => {
       }
     };
 
-    fetchData('user_info', setUserInfo, 'userInfo');
-    fetchData('user_feed', setUserFeed, 'userFeed');
-    fetchData('user_stories', setStories, 'stories');
-    fetchData('roast', setRoastData, 'roast');
-    fetchData('ship', setShipData, 'ship');
+    fetchData('user_information/profile_info', setUserInfo, 'userInfo');
+    fetchData('user_information/user_feed', setUserFeed, 'userFeed');
+    fetchData('user_information/user_stories', setStories, 'stories');
+    fetchData('ai/personal_life', setRoastData, 'roast');
+    fetchData('ai/love_life', setShipData, 'ship');
   }, [username]);
 
   return { userInfo, userFeed, stories, roastData, shipData, loading, error };

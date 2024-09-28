@@ -9,6 +9,8 @@ import com.voghbum.instaprovider.data.UserFeed;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
+import java.util.Optional;
 
 import com.voghbum.instaprovider.data.UserStories;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -39,13 +41,35 @@ public class RapidApiProvider implements InstaProvider {
     }
 
     @Override
-    public UserFeed getUserPosts(String username) {
+    public UserFeed getUserPosts(String username, int iterationNum) {
         try {
-            return webClient.get()
+            var firstFetch = webClient.get()
                     .uri("/v1.2/posts?username_or_id_or_url={username}", username)
                     .retrieve()
                     .bodyToMono(String.class)
                     .map(this::parseUserPosts).block();
+
+            var totalPosts = firstFetch.getUserPosts();
+            int iteration = 1;
+            var page_token = firstFetch.getPaginationToken();
+            UserFeed iterationFetch = firstFetch;
+
+            while((iteration < iterationNum) && !page_token.equals("null")) {
+                iterationFetch = webClient.get()
+                        .uri("/v1.2/posts?username_or_id_or_url={username}&pagination_token={page_token}", username, page_token)
+                        .retrieve()
+                        .bodyToMono(String.class)
+                        .map(this::parseUserPosts).block();
+                if(iterationFetch == null) {
+                    break;
+                }
+                totalPosts.addAll(iterationFetch.getUserPosts());
+                page_token = iterationFetch.getPaginationToken();
+                iteration++;
+            }
+
+            iterationFetch.setUserPosts(totalPosts);
+            return iterationFetch;
         } catch (WebClientResponseException.Forbidden forbidden) {
             var resultForPrivate = new UserFeed();
             resultForPrivate.setUserPosts(new ArrayList<>());
@@ -62,17 +86,7 @@ public class RapidApiProvider implements InstaProvider {
                 .map(this::parseUserStories).block();
     }
 
-    /*
-    highlighted_stories = []
-    for item in highlight_data["data"]["items"]:
-        simplified_item = {
-            "title": item["title"],
-            "cover_image_url": item["cover_media"]["cropped_image_version"]["url"]
-        }
-        highlighted_stories.append(simplified_item)
 
-    return highlighted_stories
-     */
     private UserStories parseUserStories(String responseBody) {
         UserStories result = new UserStories();
         List<UserStories.Story> stories = new ArrayList<>();
@@ -111,16 +125,17 @@ public class RapidApiProvider implements InstaProvider {
             UserFeed userFeed = new UserFeed();
             ArrayList<UserFeed.UserPost> userPosts = new ArrayList<>();
             userFeed.setUserPosts(userPosts);
-            userFeed.setPaginationToken(rootNode.get("pagination_token").asText());
+            if(rootNode.get("pagination_token") != null)
+                userFeed.setPaginationToken(rootNode.get("pagination_token").asText());
 
             for(JsonNode item : itemsNode) {
                 UserFeed.UserPost userPost = new UserFeed.UserPost();
-                userPost.setCaption(item.get("caption").asText());
-                userPost.setLikeCount(item.get("like_count").asInt());
-                userPost.setCommentCount(item.get("comment_count").asInt());
-                userPost.setTakenAt(item.get("taken_at").asText());
-                userPost.setId(item.get("id").asInt());
-                userPost.setThumbnailUrl(item.get("thumbnail_url").asText());
+                userPost.setCaption(Optional.ofNullable(item.get("caption").get("text")).map(JsonNode::asText).orElse(""));
+                userPost.setLikeCount(Optional.ofNullable(item.get("like_count")).map(JsonNode::asInt).orElse(0));
+                userPost.setCommentCount(Optional.ofNullable(item.get("comment_count")).map(JsonNode::asInt).orElse(0));
+                userPost.setTakenAt(Optional.ofNullable(item.get("taken_at")).map(JsonNode::asText).orElse(""));
+                userPost.setId(Optional.ofNullable(item.get("id")).map(JsonNode::asInt).orElse(0));
+                userPost.setThumbnailUrl(Optional.ofNullable(item.get("thumbnail_url")).map(JsonNode::asText).orElse(""));
                 userPosts.add(userPost);
             }
             return userFeed;
