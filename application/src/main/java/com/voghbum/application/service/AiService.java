@@ -26,12 +26,12 @@ public class AiService {
 
     public PersonalLifeAnalyzeResponse getPersonalInformation(String username) throws IOException, InterruptedException {
         PersonalLifeAnalyzeResponse result = new PersonalLifeAnalyzeResponse();
-        UserFeed userFeed = dal.getUserFeed(username, 999);
+        UserFeed userFeed = dal.getUserFeed(username, 2);
 
         var aiInput = new AiInput();
         var allImages = userFeed.getUserPosts();
 
-        var userPostToAiImage = allImages.stream().map(i -> {
+        var userPostToAiImage = allImages.stream().limit(20).map(i -> {
            var res = new AiInputImage();
            res.setCaption(i.getCaption());
            res.setCommentCount(i.getCommentCount());
@@ -53,12 +53,12 @@ public class AiService {
 
     public LoveLifeResponse shipMe(String username) throws IOException, InterruptedException {
         LoveLifeResponse result = new LoveLifeResponse();
-        UserFeed userFeed = dal.getUserFeed(username, 999);
+        UserFeed userFeed = dal.getUserFeed(username, 2);
 
         var allImages = userFeed.getUserPosts();
 
         var roastInput = new AiInput();
-        var userPostToAiImage = allImages.stream().map(i -> {
+        var userPostToAiImage = allImages.stream().limit(20).map(i -> {
             var res = new AiInputImage();
             res.setCaption(i.getCaption());
             res.setCommentCount(i.getCommentCount());
@@ -79,12 +79,12 @@ public class AiService {
 
     public ChangeMillionaireResponse millionaireChange(String username) throws IOException, InterruptedException {
         var result = new ChangeMillionaireResponse();
-        UserFeed userFeed = dal.getUserFeed(username, 999);
+        UserFeed userFeed = dal.getUserFeed(username, 2);
 
         var allImages = userFeed.getUserPosts();
 
         var roastInput = new AiInput();
-        var userPostToAiImage = allImages.stream().map(i -> {
+        var userPostToAiImage = allImages.stream().limit(20).map(i -> {
             var res = new AiInputImage();
             res.setCaption(i.getCaption());
             res.setCommentCount(i.getCommentCount());
@@ -105,12 +105,12 @@ public class AiService {
 
     public SimilarCelebResponse similarCeleb(String username) throws IOException, InterruptedException {
         var result = new SimilarCelebResponse();
-        UserFeed userFeed = dal.getUserFeed(username, 999);
+        UserFeed userFeed = dal.getUserFeed(username, 2);
 
         var allImages = userFeed.getUserPosts();
 
         var roastInput = new AiInput();
-        var userPostToAiImage = allImages.stream().map(i -> {
+        var userPostToAiImage = allImages.stream().limit(20).map(i -> {
             var res = new AiInputImage();
             res.setCaption(i.getCaption());
             res.setCommentCount(i.getCommentCount());
@@ -131,12 +131,12 @@ public class AiService {
 
     public StrengthAndWeaknessResponse strengthAndWeakness(String username) throws IOException, InterruptedException {
         var result = new StrengthAndWeaknessResponse();
-        UserFeed userFeed = dal.getUserFeed(username, 999);
+        UserFeed userFeed = dal.getUserFeed(username, 2);
 
         var allImages = userFeed.getUserPosts();
 
         var roastInput = new AiInput();
-        var userPostToAiImage = allImages.stream().map(i -> {
+        var userPostToAiImage = allImages.stream().limit(20).map(i -> {
             var res = new AiInputImage();
             res.setCaption(i.getCaption());
             res.setCommentCount(i.getCommentCount());

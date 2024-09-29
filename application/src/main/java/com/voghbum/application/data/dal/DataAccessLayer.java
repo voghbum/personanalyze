@@ -60,7 +60,7 @@ public class DataAccessLayer {
         }
     }
 
-    public UserFeed getUserFeed(String nickName, int iterationCount) throws IOException, InterruptedException {
+    public synchronized UserFeed getUserFeed(String nickName, int iterationCount) throws IOException, InterruptedException {
         Optional<UserFeedEntity> fromDb = userFeedRepository.findByNickName(nickName);
         if(fromDb.isEmpty()) {
             UserFeed fromApi = instaProvider.getUserPosts(nickName, iterationCount);
