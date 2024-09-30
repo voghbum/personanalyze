@@ -1,6 +1,6 @@
 'use client';
 
-import React from 'react';
+import React, { useState } from 'react';
 import { useParams } from 'next/navigation';
 import useUserData from './hooks/useUserData';
 import ProfileInfoSection from './components/ProfileInfoSection.js';
@@ -9,10 +9,12 @@ import ShipSection from './components/ShipSection';
 import ProfilePostsSection from './components/ProfilePostsSection';
 import LoadingAnimation from './components/LoadingAnimation';
 import PrivateAccountMessage from "./components/PrivateAccountMessage";
+import DetailedAnalysisModal from './components/DetailedAnalysisModal';
 
 const ResultsPage = () => {
   const { username } = useParams();
   const { userInfo, userFeed, stories, roastData, shipData, loading, error } = useUserData(username);
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
   if (error) return <div className="text-center text-red-500">{error}</div>;
 
@@ -38,6 +40,14 @@ const ResultsPage = () => {
             ) : (
               <ShipSection shipData={shipData} />
             )}
+            <div className="text-center mt-8 mb-8">
+              <button
+                className="bg-gradient-to-r from-pink-500 to-purple-600 hover:from-pink-600 hover:to-purple-700 text-white font-bold py-3 px-6 rounded-full shadow-lg transform transition duration-300 hover:scale-105"
+                onClick={() => setIsModalOpen(true)}
+              >
+                Detaylı analizi göster
+              </button>
+            </div>
             <ProfilePostsSection
               stories={stories}
               userFeed={userFeed}
@@ -46,6 +56,11 @@ const ResultsPage = () => {
           </>
         )}
       </div>
+      <DetailedAnalysisModal
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        username={username}
+      />
     </div>
   );
 };

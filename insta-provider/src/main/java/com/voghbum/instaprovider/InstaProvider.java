@@ -10,6 +10,6 @@ import java.io.IOException;
 @Service
 public interface InstaProvider {
     UserProfile getUserInfo(String username) throws IOException, InterruptedException;
-    UserFeed getUserPosts(String username) throws IOException, InterruptedException;
+    UserFeed getUserPosts(String username, int iteration) throws IOException, InterruptedException;
     UserStories getUserStories(String username) throws IOException, InterruptedException;
 }

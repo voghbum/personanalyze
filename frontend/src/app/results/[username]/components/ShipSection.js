@@ -11,7 +11,7 @@ const ShipSection = ({ shipData }) => {
       transition={{ duration: 0.5, delay: 0.3 }}
       className="mb-8 bg-gradient-to-r from-pink-600 to-purple-600 rounded-lg p-6 shadow-lg"
     >
-      <h2 className="text-2xl font-bold mb-4 text-white">AI Eşleştirme</h2>
+      <h2 className="text-2xl font-bold mb-4 text-white">Aşk Hayatım</h2>
       <p className="text-lg text-white">{shipData.ai_result}</p>
     </motion.div>
   );

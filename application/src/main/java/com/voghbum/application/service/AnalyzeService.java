@@ -29,8 +29,8 @@ public class AnalyzeService {
         return result;
     }
 
-    public UserFeed getUserFeed(String username) throws IOException, InterruptedException {
-        UserFeed result = dal.getUserFeed(username);
+    public UserFeed getUserFeed(String username, int iterationCount) throws IOException, InterruptedException {
+        UserFeed result = dal.getUserFeed(username, iterationCount);
         logFetchedData(result);
         return result;
     }

@@ -2,7 +2,7 @@ package com.voghbum.application.data.response;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-public class ShipResponse {
+public class SimilarCelebResponse {
     @JsonProperty("ai_result")
     private String aiResult;
 
