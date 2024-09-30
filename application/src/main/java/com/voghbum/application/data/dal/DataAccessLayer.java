@@ -1,11 +1,9 @@
 package com.voghbum.application.data.dal;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.voghbum.aiprovider.commons.AiProvider;
-import com.voghbum.application.controller.AnalyzeAiController;
-import com.voghbum.application.data.entity.UserFeedEntity;
-import com.voghbum.application.data.entity.UserProfileEntity;
-import com.voghbum.application.data.entity.UserStoriesEntity;
+import com.voghbum.aiprovider.commons.data.AiOutput;
+import com.voghbum.application.data.entity.*;
+import com.voghbum.application.data.repository.AiOutputRepository;
 import com.voghbum.application.data.repository.UserFeedRepository;
 import com.voghbum.application.data.repository.UserProfileRepository;
 import com.voghbum.application.data.repository.UserStoriesRepository;
@@ -20,25 +18,33 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.io.IOException;
 import java.time.LocalDateTime;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Optional;
+import java.util.function.Function;
 
 @Component
 public class DataAccessLayer {
     private static final Logger LOG = LoggerFactory.getLogger(DataAccessLayer.class);
     private final UserProfileRepository userProfileRepository;
     private final UserStoriesRepository userStoriesRepository;
-    private final InstaProvider instaProvider;
-    private final AiProvider aiProvider;
     private final UserFeedRepository userFeedRepository;
+    private final AiOutputRepository aiOutputRepository;
+    private final InstaProvider instaProvider;
+    private final AiProvider aiProvider = null;
+
 
     public DataAccessLayer(UserProfileRepository userProfileRepository,
                            UserStoriesRepository userStoriesRepository,
-                           InstaProvider instaProvider, AiProvider aiProvider, UserFeedRepository userFeedRepository) {
+                           InstaProvider instaProvider, AiProvider aiProvider,
+                           UserFeedRepository userFeedRepository,
+                           AiOutputRepository aiOutputRepository) {
         this.userProfileRepository = userProfileRepository;
         this.userStoriesRepository = userStoriesRepository;
         this.instaProvider = instaProvider;
         this.aiProvider = aiProvider;
         this.userFeedRepository = userFeedRepository;
+        this.aiOutputRepository = aiOutputRepository;
     }
 
     @Transactional(readOnly = true)
@@ -124,6 +130,44 @@ public class DataAccessLayer {
             userStoriesRepository.save(persisting);
             return fromApi;
         }
+    }
+
+    public AiOutput getAiOutput(String nickName, AiOutputType type) {
+        Optional<AiOutputEntity> fromDb = aiOutputRepository.findByUsernameAndResultType(nickName, type);
+
+        AiOutput usFromDb = getAiIfSufficient(nickName, fromDb);
+        if(usFromDb != null) {
+            return usFromDb;
+        }
+
+        Object lock = LockMaps.LOCK_FOR_USER_STORIES.computeIfAbsent(nickName, k -> new Object());
+        synchronized (lock) {
+            fromDb = aiOutputRepository.findByUsernameAndResultType(nickName, type);
+            usFromDb = getUSIfIsSufficient(nickName, fromDb);
+            if(usFromDb != null) {
+                return usFromDb;
+            }
+
+            UserStories fromApi = aiProvider.analyzeLoveLife(nickName);
+            UserStoriesEntity persisting = new UserStoriesEntity();
+            persisting.setNickName(nickName);
+            persisting.setUserStories(fromApi);
+            persisting.setLastUpdateTime(LocalDateTime.now());
+            userStoriesRepository.save(persisting);
+            return fromApi;
+        }
+    }
+
+    private AiOutput getAiIfSufficient(String nickName, Optional<AiOutputEntity> fromDb) {
+        if(fromDb.isPresent()) {
+            try {
+                return fromDb.get().getAiOutput();
+            } catch (Exception e) {
+                LOG.error("Exception while decoding data fetched from DB for username: {} ", nickName, e);
+                return null;
+            }
+        }
+        return null;
     }
 
     private UserProfile getUPIfIsSufficient(String nickName, Optional<UserProfileEntity> fromDb) {
