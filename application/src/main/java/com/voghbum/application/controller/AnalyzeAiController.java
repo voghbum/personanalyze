@@ -37,7 +37,7 @@ public class AnalyzeAiController {
     public ResponseEntity<LoveLifeResponse> loveLife(@RequestBody UserRequest request) throws IOException, InterruptedException {
         String username = request.getUsername();
         LOG.info("roast requested: " + username);
-        var result = aiService.shipMe(username);
+        var result = aiService.loveLife(username);
         //var result = new LoveLifeResponse();
         //result.setAiResult("LOVE LIFE :: Arkadaşın, sosyal medya için bir stilde takılamayan ve modaya uygun kıyafetleri asla bulamayan tiplerden biri. İkinci fotoğraftaki gömlek, sanki bir paletin içine düşüp çıkmış gibi, ama herhalde onun için bu, \"sanat eseri\" sayılır. İlk fotoğraftaki ciddi ifadesiyle aslında içten içe gülmekten başka bir şey yapmadığını düşünüyorum. Üçüncü fotoğraftaki karizmatik havası ise sadece güneş gözlüklerine dayanıyor; yoksa Amsterdam'dan dönerken kaybettiği tarzını bulmaktan aciz kalmış durumda. Onun bu özgüveni ve absürt moda anlayışı, bizim için bir komedi kaynağı!\n" + "\n");
         LOG.info("roast result for user: {} -> {}", username, result);

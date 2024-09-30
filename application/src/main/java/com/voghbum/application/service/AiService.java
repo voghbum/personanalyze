@@ -5,14 +5,12 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.voghbum.aiprovider.commons.AiProvider;
 import com.voghbum.aiprovider.commons.data.AiInput;
 import com.voghbum.aiprovider.commons.data.AiInputImage;
-import com.voghbum.aiprovider.commons.data.AiOutput;
 import com.voghbum.application.data.dal.DataAccessLayer;
 import com.voghbum.application.data.response.*;
 import com.voghbum.instaprovider.data.UserFeed;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
-import java.util.function.Function;
 
 @Service
 public class AiService {
@@ -51,7 +49,7 @@ public class AiService {
         return result;
     }
 
-    public LoveLifeResponse shipMe(String username) throws IOException, InterruptedException {
+    public LoveLifeResponse loveLife(String username) throws IOException, InterruptedException {
         LoveLifeResponse result = new LoveLifeResponse();
         UserFeed userFeed = dal.getUserFeed(username, 2);
 
