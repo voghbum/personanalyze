@@ -2,15 +2,16 @@ package com.voghbum.application.data.entity;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.ser.impl.SimpleBeanPropertyFilter;
+import com.fasterxml.jackson.databind.ser.impl.SimpleFilterProvider;
 import com.voghbum.aiprovider.commons.data.AiOutput;
-import com.voghbum.instaprovider.data.UserFeed;
 import jakarta.persistence.*;
 
 import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "ai_output", indexes = {
-        @Index(name = "idx_id_result_type", columnList = "id, resultType")
+        @Index(name = "idx_id_result_type", columnList = "id, outputType")
 })
 public class AiOutputEntity {
     @Id
@@ -31,6 +32,9 @@ public class AiOutputEntity {
     private ObjectMapper objectMapper = new ObjectMapper();
 
     public void setAiOutput(AiOutput aiOutput) throws JsonProcessingException {
+        SimpleFilterProvider filterProvider = new SimpleFilterProvider()
+                .addFilter("excludeImageUrls", SimpleBeanPropertyFilter.serializeAll());
+        objectMapper.setFilterProvider(filterProvider);
         this.aiOutput = objectMapper.writeValueAsString(aiOutput);
     }
 

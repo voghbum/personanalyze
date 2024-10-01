@@ -2,7 +2,6 @@ package com.voghbum.application.data.entity;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.voghbum.instaprovider.data.UserProfile;
 import com.voghbum.instaprovider.data.UserStories;
 import jakarta.persistence.*;
 

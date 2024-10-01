@@ -58,10 +58,12 @@ public class UserProfile {
         return profilePicUrl;
     }
 
+    @JsonProperty("is_private")
     public boolean isPrivate() {
         return isPrivate;
     }
 
+    @JsonProperty("is_verified")
     public boolean isVerified() {
         return isVerified;
     }

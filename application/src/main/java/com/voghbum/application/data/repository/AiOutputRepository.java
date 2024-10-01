@@ -11,5 +11,5 @@ import java.util.Optional;
 @Repository
 @Transactional
 public interface AiOutputRepository extends CrudRepository<AiOutputEntity, Long> {
-    Optional<AiOutputEntity> findByUsernameAndResultType(String username, AiOutputType outputType);
+    Optional<AiOutputEntity> findByUsernameAndOutputType(String username, AiOutputType outputType);
 }
