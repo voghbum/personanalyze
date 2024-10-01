@@ -28,7 +28,7 @@ public class UserInformationController {
         String username = request.getUsername();
         LOG.info("user info requested: " + username);
         try {
-            var response = analyzeService.getUserInfo(username);
+            var response = analyzeService.getUserProfile(username);
             return ResponseEntity.ok(response);
         } catch (Exception e) {
             LOG.error("Error getting user info", e);
