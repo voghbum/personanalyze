@@ -7,6 +7,7 @@ import { MessageCircle, Heart } from 'lucide-react';
 
 const TopPostsSection = ({ feed }) => {
     if (!feed || feed.length === 0) return null;
+    const displayedPosts = feed.length < 2 ? feed : feed.slice(0, 6);
 
     return (
         <motion.div
@@ -16,7 +17,7 @@ const TopPostsSection = ({ feed }) => {
         >
             <h2 className="text-2xl font-bold mb-4 text-pink-300">Öne Çıkan Gönderiler</h2>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {feed.map((post) => (
+                {displayedPosts.map((post) => (
                     <PostCard key={post.id} post={post} />
                 ))}
             </div>
