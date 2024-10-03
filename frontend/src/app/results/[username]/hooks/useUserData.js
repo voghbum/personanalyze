@@ -21,6 +21,7 @@ const useUserData = (username) => {
     dataFetchedRef.current = true;
 
     const fetchData = async (endpoint, setter, loadingKey) => {
+      setLoading(prev => ({ ...prev, [loadingKey]: true })); // Yükleme durumunu başlat
       try {
         const response = await fetch(`/api/${endpoint}`, {
           method: 'POST',
@@ -34,15 +35,41 @@ const useUserData = (username) => {
         console.error(`Error fetching ${endpoint}:`, error);
         setError(error.message);
       } finally {
-        setLoading(prev => ({ ...prev, [loadingKey]: false }));
+        setLoading(prev => ({ ...prev, [loadingKey]: false })); // Yükleme durumunu bitir
       }
     };
 
-    fetchData('user_information/profile_info', setUserInfo, 'userInfo');
-    fetchData('user_information/user_feed', setUserFeed, 'userFeed');
-    fetchData('user_information/user_stories', setStories, 'stories');
-    fetchData('ai/personal_life', setRoastData, 'roast');
-    fetchData('ai/love_life', setShipData, 'ship');
+    const fetchProfileInfo = async () => {
+      setLoading(prev => ({ ...prev, userInfo: true })); // Yükleme durumunu başlat
+      try {
+        const response = await fetch(`/api/user_information/profile_info`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ username }),
+        });
+        if (!response.ok) throw new Error(`Failed to fetch profile info`);
+        const result = await response.json();
+        setUserInfo(result);
+        return result; // Return the result for further checks
+      } catch (error) {
+        console.error(`Error fetching profile info:`, error);
+        setError(error.message);
+      } finally {
+        setLoading(prev => ({ ...prev, userInfo: false })); // Yükleme durumunu bitir
+      }
+    };
+
+    fetchProfileInfo().then(profileInfo => {
+      if (profileInfo.is_private) {
+        setLoading(prev => ({ ...prev, userFeed: false, stories: false, roast: false, ship: false }));
+        return; // Skip other fetches if profile is private
+      }
+      // Fetch other data only if profile is public
+      fetchData('user_information/user_feed', setUserFeed, 'userFeed');
+      fetchData('user_information/user_stories', setStories, 'stories');
+      fetchData('ai/personal_life', setRoastData, 'roast');
+      fetchData('ai/love_life', setShipData, 'ship');
+    });
   }, [username]);
 
   return { userInfo, userFeed, stories, roastData, shipData, loading, error };
