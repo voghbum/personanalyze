@@ -4,6 +4,14 @@ import { Link as LinkIcon, Camera } from 'lucide-react';
 import { motion } from 'framer-motion';
 import {formatNumber} from "chart.js/helpers";
 
+const formatCount = (count) => {
+    if (count >= 1000000) {
+        return (count / 1000000).toFixed(1) + 'M'; // Milyon
+    } else if (count >= 1000) {
+        return (count / 1000).toFixed(1) + 'K'; // Bin
+    }
+    return count; // 1000'den az ise sayıyı olduğu gibi döndür
+};
 
 const ProfileHeader = ({ user }) => (
     <motion.div
@@ -41,8 +49,8 @@ const ProfileHeader = ({ user }) => (
         </div>
         <div className="flex justify-around mt-8">
             <StatItem label="Gönderiler" value={formatNumber(user.media_count)} />
-            <StatItem label="Takipçiler" value={formatNumber(user.follower_count)} />
-            <StatItem label="Takip" value={formatNumber(user.following_count)} />
+            <StatItem label="Takipçiler" value={formatCount(user.follower_count)} /> {/* Güncellenmiş kısım */}
+            <StatItem label="Takip" value={formatCount(user.following_count)} /> {/* Güncellenmiş kısım */}
         </div>
     </motion.div>
 );
