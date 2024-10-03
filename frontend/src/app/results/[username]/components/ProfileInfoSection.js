@@ -1,6 +1,5 @@
 import React from 'react';
 import ProfileHeader from './ProfileHeader';
-import PrivateAccountMessage from './PrivateAccountMessage';
 
 const ProfileInfoSection = ({ userInfo }) => {
   if (!userInfo) return null;
@@ -8,7 +7,6 @@ const ProfileInfoSection = ({ userInfo }) => {
   return (
     <div className="mb-8">
       <ProfileHeader user={userInfo} />
-      {userInfo.is_private && <PrivateAccountMessage username={userInfo.username} />}
     </div>
   );
 };

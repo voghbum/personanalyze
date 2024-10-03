@@ -52,15 +52,18 @@ const ResultsPage = () => {
               stories={stories}
               userFeed={userFeed}
               loading={loading}
+              userInfo={userInfo} // userInfo'yu prop olarak geçiyoruz
             />
           </>
         )}
       </div>
-      <DetailedAnalysisModal
-        isOpen={isModalOpen}
-        onClose={() => setIsModalOpen(false)}
-        username={username}
-      />
+      {!userInfo?.is_private && ( // Optional chaining kullanıldı
+        <DetailedAnalysisModal
+          isOpen={isModalOpen}
+          onClose={() => setIsModalOpen(false)}
+          username={username}
+        />
+      )}
     </div>
   );
 };
