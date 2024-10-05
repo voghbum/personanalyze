@@ -12,8 +12,6 @@ import com.voghbum.application.data.entity.AiOutputType;
 import com.voghbum.application.data.repository.AiOutputRepository;
 import com.voghbum.application.data.response.*;
 import com.voghbum.instaprovider.data.UserFeed;
-import com.voghbum.instaprovider.data.UserProfile;
-import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -245,7 +243,7 @@ public class AiService {
         return null;
     }
 
-    private static @NotNull AiInput convertAiInput(List<UserFeed.UserPost> allImages) {
+    private static AiInput convertAiInput(List<UserFeed.UserPost> allImages) {
         var roastInput = new AiInput();
         var userPostToAiImage = allImages.stream().limit(20).map(i -> {
             var res = new AiInputImage();
@@ -259,7 +257,7 @@ public class AiService {
         return roastInput;
     }
 
-    private static @NotNull String getOnlyAiText(AiOutput aiResult) throws JsonProcessingException {
+    private static String getOnlyAiText(AiOutput aiResult) throws JsonProcessingException {
         ObjectMapper mapper = new ObjectMapper();
         JsonNode rootNode = mapper.readTree(aiResult.getAiOutput());
         return rootNode.get("choices").get(0).get("message").get("content").asText();

@@ -8,19 +8,19 @@ import com.voghbum.aiprovider.configuration.PromptValues;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
-import org.springframework.web.reactive.function.client.WebClient;
+import org.springframework.web.client.RestClient;
 
 import java.util.List;
 
 @Service
 public class OpenaiProvider implements AiProvider {
-    private final WebClient webClient;
+    private final RestClient restClient;
     private final PromptValues promptValues;
-    OpenaiJsonBodyGenerator bodyGenerator;
+    private final OpenaiJsonBodyGenerator bodyGenerator;
 
     @Autowired
-    public OpenaiProvider(@Qualifier("aiWebClient") WebClient webClient, OpenaiJsonBodyGenerator bodyGenerator, PromptValues promptValues) {
-        this.webClient = webClient;
+    public OpenaiProvider(@Qualifier("aiRestClient") RestClient restClient, OpenaiJsonBodyGenerator bodyGenerator, PromptValues promptValues) {
+        this.restClient = restClient;
         this.bodyGenerator = bodyGenerator;
         this.promptValues = promptValues;
     }
@@ -58,10 +58,10 @@ public class OpenaiProvider implements AiProvider {
             throw new RuntimeException(e);
         }
 
-        String body = webClient.post()
-                .bodyValue(jsonBody)
+        String body = restClient.post()
+                .body(jsonBody)
                 .retrieve()
-                .bodyToMono(String.class).block();
+                .body(String.class);
         var result = new AiOutput();
         result.setAiOutput(body);
         result.setRelatedImages(List.of(input));

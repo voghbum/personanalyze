@@ -1,6 +1,5 @@
 package com.voghbum.instaprovider;
 
-import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.voghbum.instaprovider.data.UserProfile;
@@ -9,81 +8,88 @@ import com.voghbum.instaprovider.data.UserFeed;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Locale;
 import java.util.Optional;
 
 import com.voghbum.instaprovider.data.UserStories;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
-import org.springframework.web.reactive.function.client.WebClient;
-import org.springframework.web.reactive.function.client.WebClientResponseException;
+import org.springframework.web.client.HttpStatusCodeException;
+import org.springframework.web.client.RestClient;
 
 @Service
 public class RapidApiProvider implements InstaProvider {
-
-    private final WebClient webClient;
+    private static final Logger LOG = LoggerFactory.getLogger(RapidApiProvider.class);
+    private final RestClient webClient;
     private final ObjectMapper objectMapper;
 
     @Autowired
-    public RapidApiProvider(@Qualifier("instaWebClient") WebClient webClient, ObjectMapper objectMapper) {
+    public RapidApiProvider(@Qualifier("instaRestClient") RestClient webClient, ObjectMapper objectMapper) {
         this.webClient = webClient;
         this.objectMapper = objectMapper;
     }
 
     @Override
     public UserProfile getUserInfo(String username) {
-        return webClient.get()
-                .uri("/v1/info?username_or_id_or_url={username}&include_about=true", username)
-                .retrieve()
-                .bodyToMono(String.class)
-                .map(this::parseUserInfo).block();
+        String result;
+        try {
+            result = webClient.get()
+                    .uri("/v1/info?username_or_id_or_url={username}&include_about=true", username)
+                    .retrieve().body(String.class);
+            return parseUserInfo(result);
+        } catch (Exception e) {
+            LOG.error("error: ", e);
+            throw e;
+        }
     }
 
     @Override
     public UserFeed getUserPosts(String username, int iterationNum) {
         try {
-            var firstFetch = webClient.get()
+            String ffs = webClient.get()
                     .uri("/v1.2/posts?username_or_id_or_url={username}", username)
-                    .retrieve()
-                    .bodyToMono(String.class)
-                    .map(this::parseUserPosts).block();
+                    .retrieve().body(String.class);
+            var firstFetchUF = parseUserPosts(ffs);
 
-            var totalPosts = firstFetch.getUserPosts();
+            var totalPosts = firstFetchUF.getUserPosts();
             int iteration = 1;
-            var page_token = firstFetch.getPaginationToken();
-            UserFeed iterationFetch = firstFetch;
+            var page_token = firstFetchUF.getPaginationToken();
+            UserFeed iterationUF = firstFetchUF;
 
             while((iteration < iterationNum) && !page_token.equals("null")) {
-                iterationFetch = webClient.get()
+                String ifs = ffs;
+                ifs = webClient.get()
                         .uri("/v1.2/posts?username_or_id_or_url={username}&pagination_token={page_token}", username, page_token)
                         .retrieve()
-                        .bodyToMono(String.class)
-                        .map(this::parseUserPosts).block();
-                if(iterationFetch == null) {
-                    break;
-                }
-                totalPosts.addAll(iterationFetch.getUserPosts());
-                page_token = iterationFetch.getPaginationToken();
+                        .body(String.class);
+                iterationUF = parseUserPosts(ifs);
+                totalPosts.addAll(iterationUF.getUserPosts());
+                page_token = iterationUF.getPaginationToken();
                 iteration++;
             }
 
-            iterationFetch.setUserPosts(totalPosts);
-            return iterationFetch;
-        } catch (WebClientResponseException.Forbidden forbidden) {
-            var resultForPrivate = new UserFeed();
-            resultForPrivate.setUserPosts(new ArrayList<>());
-            return resultForPrivate;
+            iterationUF.setUserPosts(totalPosts);
+            return iterationUF;
+        } catch (HttpStatusCodeException e) {
+            if(e.getStatusCode().equals(HttpStatus.NOT_FOUND)) {
+                var resultForPrivate = new UserFeed();
+                resultForPrivate.setUserPosts(new ArrayList<>());
+                return resultForPrivate;
+            }
+            throw e;
         }
     }
 
     @Override
     public UserStories getUserStories(String username) throws IOException, InterruptedException {
-        return webClient.get()
+        var result = webClient.get()
                 .uri("v1/highlights?username_or_id_or_url={username}", username)
                 .retrieve()
-                .bodyToMono(String.class)
-                .map(this::parseUserStories).block();
+                .body(String.class);
+        return parseUserStories(result);
     }
 
 
