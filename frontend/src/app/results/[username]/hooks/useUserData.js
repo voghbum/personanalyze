@@ -47,6 +47,10 @@ const useUserData = (username) => {
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ username }),
         });
+        if (response.status === 404) {
+          setError("Bu kullanıcı adında bir profil yoktur"); // Handle 404 error
+          return null; // Return null to indicate no profile found
+        }
         if (!response.ok) throw new Error(`Failed to fetch profile info`);
         const result = await response.json();
         setUserInfo(result);
