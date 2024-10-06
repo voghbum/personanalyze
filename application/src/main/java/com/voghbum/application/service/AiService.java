@@ -102,7 +102,7 @@ public class AiService {
 
             var persisting = new AiOutputEntity();
             persisting.setUsername(username);
-            persisting.setOutputType(AiOutputType.PERSONAL_INFORMATION);
+            persisting.setOutputType(AiOutputType.ANALYZE_FOR_PRIVATE);
             persisting.setAiOutput(aiResult);
             aiOutputRepository.save(persisting);
 

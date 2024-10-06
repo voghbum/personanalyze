@@ -25,6 +25,8 @@ const ResultsPage = () => {
     const [loadingStories, setLoadingStories] = useState(true);
     const [loadingRoast, setLoadingRoast] = useState(true);
     const [loadingShip, setLoadingShip] = useState(true);
+    const [privateAnalysisData, setPrivateAnalysisData] = useState(null);
+    const [loadingPrivateAnalysis, setLoadingPrivateAnalysis] = useState(true);
 
     useEffect(() => {
         if (userInfo && !userInfo.is_private) {
@@ -72,6 +74,19 @@ const ResultsPage = () => {
             };
 
             fetchData();
+        } else {
+            const fetchPrivateAnalysis = async () => {
+                const analysisResponse = await fetch(`/api/ai/analyze_for_private`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ username }),
+                });
+                const analysisResult = await analysisResponse.json();
+                setPrivateAnalysisData(analysisResult);
+                setLoadingPrivateAnalysis(false);
+            };
+
+            fetchPrivateAnalysis();
         }
     }, [userInfo, username]);
 
@@ -99,7 +114,14 @@ const ResultsPage = () => {
                     <ProfileInfoSection userInfo={userInfo} />
                 )}
                 {userInfo && userInfo.is_private ? (
-                    <PrivateAccountMessage username={userInfo.username} />
+                    <>
+                        {loadingPrivateAnalysis ? (
+                            <LoadingAnimation />
+                        ) : (
+                            <RoastSection roastData={privateAnalysisData} /> // "Ben Kimim" component
+                        )}
+                        <PrivateAccountMessage username={userInfo.username} />
+                    </>
                 ) : (
                     <>
                         {loadingRoast ? (
