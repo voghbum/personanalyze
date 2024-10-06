@@ -67,4 +67,13 @@ public class AnalyzeAiController {
         LOG.info("strength_and_weaknesses result for user: {} -> {}", username, result);
         return ResponseEntity.ok(result);
     }
+
+    @PostMapping("/analyze_for_private")
+    public ResponseEntity<PersonalLifeAnalyzeResponse> analyzeForPrivateUser(@RequestBody UserRequest request) throws IOException, InterruptedException {
+        String username = request.getUsername();
+        LOG.info("analuze_for_private requested: " + username);
+        var result = aiService.analyzeForPrivate(username);
+        LOG.info("analuze_for_private result for user: {} -> {}", username, result);
+        return ResponseEntity.ok(result);
+    }
 }

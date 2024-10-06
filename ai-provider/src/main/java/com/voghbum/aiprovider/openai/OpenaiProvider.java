@@ -50,6 +50,11 @@ public class OpenaiProvider implements AiProvider {
         return analyzeIt(input, promptValues.SYS_STRENGTH_WEAKNESSES_QUEST);
     }
 
+    @Override
+    public AiOutput analyzeForPrivate(AiInput input) {
+        return analyzeIt(input, promptValues.SYS_ANALYZE_PRIVATE_USER_QUEST);
+    }
+
     private AiOutput analyzeIt(AiInput input, String quest) {
         String jsonBody;
         try {

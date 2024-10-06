@@ -45,7 +45,7 @@ public class UserInformationController {
     public ResponseEntity<UserFeed> userFeed(@RequestBody UserRequest request) throws IOException, InterruptedException {
         String username = request.getUsername();
         LOG.info("user feed requested: " + username);
-        var response = analyzeService.getUserFeed(username, 10);
+        var response = analyzeService.getUserFeed(username, 1);
         return ResponseEntity.ok(response);
     }
 

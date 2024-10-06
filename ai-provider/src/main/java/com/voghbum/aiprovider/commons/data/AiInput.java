@@ -8,9 +8,35 @@ public class AiInput {
     private List<AiInputImage> images;
     private String biography;
     private String fullName;
-    private String Caption;
     private int followerCount;
     private int followingCount;
+    private String username;
+    private String profilePicUrl;
+    private int mediaCount;
+
+    public String getUsername() {
+        return username;
+    }
+
+    public void setUsername(String username) {
+        this.username = username;
+    }
+
+    public String getProfilePicUrl() {
+        return profilePicUrl;
+    }
+
+    public void setProfilePicUrl(String profilePicUrl) {
+        this.profilePicUrl = profilePicUrl;
+    }
+
+    public int getMediaCount() {
+        return mediaCount;
+    }
+
+    public void setMediaCount(int mediaCount) {
+        this.mediaCount = mediaCount;
+    }
 
     public List<AiInputImage> getImages() {
         return images;
@@ -34,14 +60,6 @@ public class AiInput {
 
     public void setFullName(String fullName) {
         this.fullName = fullName;
-    }
-
-    public String getCaption() {
-        return Caption;
-    }
-
-    public void setCaption(String caption) {
-        Caption = caption;
     }
 
     public int getFollowerCount() {
