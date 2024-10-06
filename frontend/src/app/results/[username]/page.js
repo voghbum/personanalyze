@@ -1,7 +1,7 @@
 'use client';
 
-import React, { useState } from 'react';
-import { useParams } from 'next/navigation';
+import React, {useState} from 'react';
+import {useParams} from 'next/navigation';
 import useUserData from './hooks/useUserData';
 import ProfileInfoSection from './components/ProfileInfoSection.js';
 import RoastSection from './components/RoastSection';
@@ -12,60 +12,74 @@ import PrivateAccountMessage from "./components/PrivateAccountMessage";
 import DetailedAnalysisModal from './components/DetailedAnalysisModal';
 
 const ResultsPage = () => {
-  const { username } = useParams();
-  const { userInfo, userFeed, stories, roastData, shipData, loading, error } = useUserData(username);
-  const [isModalOpen, setIsModalOpen] = useState(false);
+    const {username} = useParams();
+    const {userInfo, userFeed, stories, roastData, shipData, loading, error} = useUserData(username);
+    const [isModalOpen, setIsModalOpen] = useState(false);
 
-  if (error) return <div className="text-center text-red-500">{error}</div>;
-
-  return (
-    <div className="min-h-screen bg-gradient-to-br from-indigo-900 via-purple-900 to-pink-700 text-white py-8 px-4">
-      <div className="max-w-6xl mx-auto">
-        {loading.userInfo ? (
-          <LoadingAnimation />
-        ) : (
-          <ProfileInfoSection userInfo={userInfo} />
-        )}
-        {userInfo && userInfo.is_private ? (
-          <PrivateAccountMessage username={userInfo.username} />
-        ) : (
-          <>
-            {loading.roast ? (
-              <LoadingAnimation />
-            ) : (
-              <RoastSection roastData={roastData} />
-            )}
-            {loading.ship ? (
-              <LoadingAnimation />
-            ) : (
-              <ShipSection shipData={shipData} />
-            )}
-            <div className="text-center mt-8 mb-8">
-              <button
-                className="bg-gradient-to-r from-pink-500 to-purple-600 hover:from-pink-600 hover:to-purple-700 text-white font-bold py-3 px-6 rounded-full shadow-lg transform transition duration-300 hover:scale-105"
-                onClick={() => setIsModalOpen(true)}
-              >
-                Detaylı analizi göster
-              </button>
+    if (error)
+        return (
+            <div
+                className="min-h-screen bg-gradient-to-br from-indigo-900 via-purple-900 to-pink-700 text-white py-8 px-4">
+                <div>
+                    <p>Kullanıcı bulunamadı veya bir hata oluştu.</p> {/* Hata mesajı */}
+                    <button
+                        onClick={() => router.push('/')} // Ana sayfaya yönlendirme
+                        className="mt-4 bg-blue-500 text-white py-2 px-4 rounded"
+                    >
+                        Ana sayfaya dön
+                    </button>
+                </div>
             </div>
-            <ProfilePostsSection
-              stories={stories}
-              userFeed={userFeed}
-              loading={loading}
-              userInfo={userInfo} // userInfo'yu prop olarak geçiyoruz
-            />
-          </>
-        )}
-      </div>
-      {!userInfo?.is_private && ( // Optional chaining kullanıldı
-        <DetailedAnalysisModal
-          isOpen={isModalOpen}
-          onClose={() => setIsModalOpen(false)}
-          username={username}
-        />
-      )}
-    </div>
-  );
+        );
+
+    return (
+        <div className="min-h-screen bg-gradient-to-br from-indigo-900 via-purple-900 to-pink-700 text-white py-8 px-4">
+            <div className="max-w-6xl mx-auto">
+                {loading.userInfo ? (
+                    <LoadingAnimation/>
+                ) : (
+                    <ProfileInfoSection userInfo={userInfo}/>
+                )}
+                {userInfo && userInfo.is_private ? (
+                    <PrivateAccountMessage username={userInfo.username}/>
+                ) : (
+                    <>
+                        {loading.roast ? (
+                            <LoadingAnimation/>
+                        ) : (
+                            <RoastSection roastData={roastData}/>
+                        )}
+                        {loading.ship ? (
+                            <LoadingAnimation/>
+                        ) : (
+                            <ShipSection shipData={shipData}/>
+                        )}
+                        <div className="text-center mt-8 mb-8">
+                            <button
+                                className="bg-gradient-to-r from-pink-500 to-purple-600 hover:from-pink-600 hover:to-purple-700 text-white font-bold py-3 px-6 rounded-full shadow-lg transform transition duration-300 hover:scale-105"
+                                onClick={() => setIsModalOpen(true)}
+                            >
+                                Detaylı analizi göster
+                            </button>
+                        </div>
+                        <ProfilePostsSection
+                            stories={stories}
+                            userFeed={userFeed}
+                            loading={loading}
+                            userInfo={userInfo}
+                        />
+                    </>
+                )}
+            </div>
+            {!userInfo?.is_private && (
+                <DetailedAnalysisModal
+                    isOpen={isModalOpen}
+                    onClose={() => setIsModalOpen(false)}
+                    username={username}
+                />
+            )}
+        </div>
+    );
 };
 
 export default ResultsPage;

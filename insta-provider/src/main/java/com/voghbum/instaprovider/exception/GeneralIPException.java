@@ -1,19 +1,27 @@
 package com.voghbum.instaprovider.exception;
 
-public class GeneralIPException extends Exception {
-    public GeneralIPException() {
+import java.io.IOException;
+
+public class GeneralIPException extends IOException {
+    private final String problematicUsername;
+
+    public GeneralIPException(String username) {
         super();
+        this.problematicUsername = username;
     }
 
-    public GeneralIPException(String message) {
+    public GeneralIPException(String username, String message) {
         super(message);
+        this.problematicUsername = username;
     }
 
-    public GeneralIPException(String message, Throwable cause) {
+    public GeneralIPException(String username, String message, Throwable cause) {
         super(message, cause);
+        this.problematicUsername = username;
     }
 
-    public GeneralIPException(Throwable cause) {
+    public GeneralIPException(String username, Throwable cause) {
         super(cause);
+        this.problematicUsername = username;
     }
 }

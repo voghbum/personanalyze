@@ -1,7 +1,8 @@
-package com.voghbum.instaprovider;
+package com.voghbum.instaprovider.RapidApi;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.voghbum.instaprovider.InstaProvider;
 import com.voghbum.instaprovider.data.UserProfile;
 import com.voghbum.instaprovider.data.UserFeed;
 
@@ -15,79 +16,69 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
-import org.springframework.web.client.HttpStatusCodeException;
 import org.springframework.web.client.RestClient;
 
 @Service
 public class RapidApiProvider implements InstaProvider {
     private static final Logger LOG = LoggerFactory.getLogger(RapidApiProvider.class);
-    private final RestClient webClient;
+    private final RestClient restClient;
     private final ObjectMapper objectMapper;
 
     @Autowired
-    public RapidApiProvider(@Qualifier("instaRestClient") RestClient webClient, ObjectMapper objectMapper) {
-        this.webClient = webClient;
+    public RapidApiProvider(@Qualifier("instaRestClient") RestClient restClient, ObjectMapper objectMapper) {
+        this.restClient = restClient;
         this.objectMapper = objectMapper;
     }
 
     @Override
     public UserProfile getUserInfo(String username) {
         String result;
-        try {
-            result = webClient.get()
-                    .uri("/v1/info?username_or_id_or_url={username}&include_about=true", username)
-                    .retrieve().body(String.class);
-            return parseUserInfo(result);
-        } catch (Exception e) {
-            LOG.error("error: ", e);
-            throw e;
-        }
+        result = restClient.get()
+                .uri("/v1/info?username_or_id_or_url={username}&include_about=true", username)
+                .retrieve()
+                .onStatus(new RapidApiErrorHandler(username))
+                .body(String.class);
+        return parseUserInfo(result);
     }
 
     @Override
     public UserFeed getUserPosts(String username, int iterationNum) {
-        try {
-            String ffs = webClient.get()
-                    .uri("/v1.2/posts?username_or_id_or_url={username}", username)
-                    .retrieve().body(String.class);
-            var firstFetchUF = parseUserPosts(ffs);
+        String ffs = restClient.get()
+                .uri("/v1.2/posts?username_or_id_or_url={username}", username)
+                .retrieve()
+                .onStatus(new RapidApiErrorHandler(username))
+                .body(String.class);
+        var firstFetchUF = parseUserPosts(ffs);
 
-            var totalPosts = firstFetchUF.getUserPosts();
-            int iteration = 1;
-            var page_token = firstFetchUF.getPaginationToken();
-            UserFeed iterationUF = firstFetchUF;
+        var totalPosts = firstFetchUF.getUserPosts();
+        int iteration = 1;
+        var page_token = firstFetchUF.getPaginationToken();
+        UserFeed iterationUF = firstFetchUF;
 
-            while((iteration < iterationNum) && !page_token.equals("null")) {
-                String ifs = ffs;
-                ifs = webClient.get()
-                        .uri("/v1.2/posts?username_or_id_or_url={username}&pagination_token={page_token}", username, page_token)
-                        .retrieve()
-                        .body(String.class);
-                iterationUF = parseUserPosts(ifs);
-                totalPosts.addAll(iterationUF.getUserPosts());
-                page_token = iterationUF.getPaginationToken();
-                iteration++;
-            }
-
-            iterationUF.setUserPosts(totalPosts);
-            return iterationUF;
-        } catch (HttpStatusCodeException e) {
-            if(e.getStatusCode().equals(HttpStatus.NOT_FOUND)) {
-                var resultForPrivate = new UserFeed();
-                resultForPrivate.setUserPosts(new ArrayList<>());
-                return resultForPrivate;
-            }
-            throw e;
+        while ((iteration < iterationNum) && !page_token.equals("null")) {
+            String ifs = ffs;
+            ifs = restClient.get()
+                    .uri("/v1.2/posts?username_or_id_or_url={username}&pagination_token={page_token}", username, page_token)
+                    .retrieve()
+                    .onStatus(new RapidApiErrorHandler(username))
+                    .body(String.class);
+            iterationUF = parseUserPosts(ifs);
+            totalPosts.addAll(iterationUF.getUserPosts());
+            page_token = iterationUF.getPaginationToken();
+            iteration++;
         }
+
+        iterationUF.setUserPosts(totalPosts);
+        return iterationUF;
     }
 
     @Override
     public UserStories getUserStories(String username) throws IOException, InterruptedException {
-        var result = webClient.get()
+        var result = restClient.get()
                 .uri("v1/highlights?username_or_id_or_url={username}", username)
                 .retrieve()
+                .onStatus(new RapidApiErrorHandler(username))
                 .body(String.class);
         return parseUserStories(result);
     }
@@ -101,7 +92,7 @@ public class RapidApiProvider implements InstaProvider {
             JsonNode rootNode = objectMapper.readTree(responseBody);
             JsonNode itemsNode = rootNode.get("data").get("items");
 
-            for(JsonNode item : itemsNode) {
+            for (JsonNode item : itemsNode) {
                 UserStories.Story story = new UserStories.Story();
                 story.setTitle(item.get("title").asText());
                 story.setCoverImageUrl(item.get("cover_media").get("cropped_image_version").get("url").asText());
@@ -131,10 +122,10 @@ public class RapidApiProvider implements InstaProvider {
             UserFeed userFeed = new UserFeed();
             ArrayList<UserFeed.UserPost> userPosts = new ArrayList<>();
             userFeed.setUserPosts(userPosts);
-            if(rootNode.get("pagination_token") != null)
+            if (rootNode.get("pagination_token") != null)
                 userFeed.setPaginationToken(rootNode.get("pagination_token").asText());
 
-            for(JsonNode item : itemsNode) {
+            for (JsonNode item : itemsNode) {
                 UserFeed.UserPost userPost = new UserFeed.UserPost();
                 userPost.setCaption(Optional.ofNullable(item.get("caption").get("text")).map(JsonNode::asText).orElse(""));
                 userPost.setLikeCount(Optional.ofNullable(item.get("like_count")).map(JsonNode::asInt).orElse(0));

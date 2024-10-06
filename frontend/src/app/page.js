@@ -1,7 +1,7 @@
 import React from 'react';
 import dynamic from 'next/dynamic';
 
-const InstagramAnalyzer = dynamic(() => import('../components/InstagramAnalyzer'), {
+const InstagramAnalyzer = dynamic(() => import('./InstagramAnalyzer'), {
   loading: () => <p>Loading...</p>,
   ssr: false
 });
