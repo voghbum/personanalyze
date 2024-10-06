@@ -1,8 +1,8 @@
 'use client';
 
-import React, {useState} from 'react';
-import {useParams} from 'next/navigation';
-import useUserData from './hooks/useUserData';
+import React, { useState, useEffect } from 'react';
+import { useParams } from 'next/navigation';
+import useUserInfo from './hooks/useUserInfo';
 import ProfileInfoSection from './components/ProfileInfoSection.js';
 import RoastSection from './components/RoastSection';
 import ShipSection from './components/ShipSection';
@@ -12,14 +12,72 @@ import PrivateAccountMessage from "./components/PrivateAccountMessage";
 import DetailedAnalysisModal from './components/DetailedAnalysisModal';
 
 const ResultsPage = () => {
-    const {username} = useParams();
-    const {userInfo, userFeed, stories, roastData, shipData, loading, error} = useUserData(username);
+    const { username } = useParams();
+    const { userInfo, loading: loadingUserInfo, error } = useUserInfo(username);
     const [isModalOpen, setIsModalOpen] = useState(false);
+
+
+    const [userFeed, setUserFeed] = useState(null);
+    const [stories, setStories] = useState(null);
+    const [roastData, setRoastData] = useState(null);
+    const [shipData, setShipData] = useState(null);
+    const [loadingUserFeed, setLoadingUserFeed] = useState(true);
+    const [loadingStories, setLoadingStories] = useState(true);
+    const [loadingRoast, setLoadingRoast] = useState(true);
+    const [loadingShip, setLoadingShip] = useState(true);
+
+    useEffect(() => {
+        if (userInfo && !userInfo.is_private) {
+            // Fetch other data only if the account is not private
+            const fetchData = async () => {
+                // Fetch user feed
+                const feedResponse = await fetch(`/api/user_information/user_feed`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ username }),
+                });
+                const feedResult = await feedResponse.json();
+                setUserFeed(feedResult);
+                setLoadingUserFeed(false);
+
+                // Fetch user stories
+                const storiesResponse = await fetch(`/api/user_information/user_stories`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ username }),
+                });
+                const storiesResult = await storiesResponse.json();
+                setStories(storiesResult);
+                setLoadingStories(false);
+
+                // Fetch roast data
+                const roastResponse = await fetch(`/api/ai/personal_life`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ username }),
+                });
+                const roastResult = await roastResponse.json();
+                setRoastData(roastResult);
+                setLoadingRoast(false);
+
+                // Fetch ship data
+                const shipResponse = await fetch(`/api/ai/love_life`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ username }),
+                });
+                const shipResult = await shipResponse.json();
+                setShipData(shipResult);
+                setLoadingShip(false);
+            };
+
+            fetchData();
+        }
+    }, [userInfo, username]);
 
     if (error)
         return (
-            <div
-                className="min-h-screen bg-gradient-to-br from-indigo-900 via-purple-900 to-pink-700 text-white py-8 px-4">
+            <div className="min-h-screen bg-gradient-to-br from-indigo-900 via-purple-900 to-pink-700 text-white py-8 px-4">
                 <div>
                     <p>Kullanıcı bulunamadı veya bir hata oluştu.</p> {/* Hata mesajı */}
                     <button
@@ -35,24 +93,24 @@ const ResultsPage = () => {
     return (
         <div className="min-h-screen bg-gradient-to-br from-indigo-900 via-purple-900 to-pink-700 text-white py-8 px-4">
             <div className="max-w-6xl mx-auto">
-                {loading.userInfo ? (
-                    <LoadingAnimation/>
+                {loadingUserInfo ? (
+                    <LoadingAnimation />
                 ) : (
-                    <ProfileInfoSection userInfo={userInfo}/>
+                    <ProfileInfoSection userInfo={userInfo} />
                 )}
                 {userInfo && userInfo.is_private ? (
-                    <PrivateAccountMessage username={userInfo.username}/>
+                    <PrivateAccountMessage username={userInfo.username} />
                 ) : (
                     <>
-                        {loading.roast ? (
-                            <LoadingAnimation/>
+                        {loadingRoast ? (
+                            <LoadingAnimation />
                         ) : (
-                            <RoastSection roastData={roastData}/>
+                            <RoastSection roastData={roastData} />
                         )}
-                        {loading.ship ? (
-                            <LoadingAnimation/>
+                        {loadingShip ? (
+                            <LoadingAnimation />
                         ) : (
-                            <ShipSection shipData={shipData}/>
+                            <ShipSection shipData={shipData} />
                         )}
                         <div className="text-center mt-8 mb-8">
                             <button
@@ -65,7 +123,7 @@ const ResultsPage = () => {
                         <ProfilePostsSection
                             stories={stories}
                             userFeed={userFeed}
-                            loading={loading}
+                            loading={loadingUserFeed}
                             userInfo={userInfo}
                         />
                     </>
