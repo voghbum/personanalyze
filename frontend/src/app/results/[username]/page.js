@@ -10,7 +10,6 @@ import ProfilePostsSection from './components/ProfilePostsSection';
 import LoadingAnimation from './components/LoadingAnimation';
 import PrivateAccountMessage from "./components/PrivateAccountMessage";
 import DetailedAnalysisModal from './components/DetailedAnalysisModal';
-import ErrorMessage from "./components/ErrorMessage";
 
 const ResultsPage = () => {
     const {username} = useParams();
@@ -22,7 +21,13 @@ const ResultsPage = () => {
             <div
                 className="min-h-screen bg-gradient-to-br from-indigo-900 via-purple-900 to-pink-700 text-white py-8 px-4">
                 <div>
-                    {error && <ErrorMessage message={error}/>}
+                    <p>Kullanıcı bulunamadı veya bir hata oluştu.</p> {/* Hata mesajı */}
+                    <button
+                        onClick={() => router.push('/')} // Ana sayfaya yönlendirme
+                        className="mt-4 bg-blue-500 text-white py-2 px-4 rounded"
+                    >
+                        Ana sayfaya dön
+                    </button>
                 </div>
             </div>
         );
@@ -61,12 +66,12 @@ const ResultsPage = () => {
                             stories={stories}
                             userFeed={userFeed}
                             loading={loading}
-                            userInfo={userInfo} // userInfo'yu prop olarak geçiyoruz
+                            userInfo={userInfo}
                         />
                     </>
                 )}
             </div>
-            {!userInfo?.is_private && ( // Optional chaining kullanıldı
+            {!userInfo?.is_private && (
                 <DetailedAnalysisModal
                     isOpen={isModalOpen}
                     onClose={() => setIsModalOpen(false)}
