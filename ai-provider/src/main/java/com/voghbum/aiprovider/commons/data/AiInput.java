@@ -7,7 +7,6 @@ import java.util.List;
 public class AiInput {
     private List<AiInputImage> images;
     private String biography;
-    private String category;
     private String fullName;
     private String Caption;
     private int followerCount;
@@ -27,14 +26,6 @@ public class AiInput {
 
     public void setBiography(String biography) {
         this.biography = biography;
-    }
-
-    public String getCategory() {
-        return category;
-    }
-
-    public void setCategory(String category) {
-        this.category = category;
     }
 
     public String getFullName() {

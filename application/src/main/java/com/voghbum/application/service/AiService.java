@@ -160,7 +160,7 @@ public class AiService {
             return result;
         }
 
-        var aiKey = new AiKey(username, AiOutputType.LOVE_LIFE);
+        var aiKey = new AiKey(username, AiOutputType.SIMILAR_CELEB);
         Object lock = LockMapsForAiService.LOCK_FOR_AI_OUTPUT.computeIfAbsent(aiKey, k -> new Object());
         synchronized (lock) {
             fromDb = aiOutputRepository.findByUsernameAndOutputType(username, AiOutputType.SIMILAR_CELEB);
