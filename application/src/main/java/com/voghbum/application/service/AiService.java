@@ -12,11 +12,13 @@ import com.voghbum.application.data.entity.AiOutputType;
 import com.voghbum.application.data.repository.AiOutputRepository;
 import com.voghbum.application.data.response.*;
 import com.voghbum.instaprovider.data.UserFeed;
+import com.voghbum.instaprovider.data.UserProfile;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -54,9 +56,47 @@ public class AiService {
             }
 
             UserFeed userFeed = analyzeService.getUserFeed(username, 2);
+            UserProfile userProfile = analyzeService.getUserProfile(username);
             var allImages = userFeed.getUserPosts();
-            var aiInput = convertAiInput(allImages);
+            var aiInput = convertAiInput(allImages, userProfile);
             var aiResult = aiProvider.analyzePersonalInfo(aiInput);
+            var aiResultText = getOnlyAiText(aiResult);
+            result.setAiResult(aiResultText);
+
+            var persisting = new AiOutputEntity();
+            persisting.setUsername(username);
+            persisting.setOutputType(AiOutputType.PERSONAL_INFORMATION);
+            persisting.setAiOutput(aiResult);
+            aiOutputRepository.save(persisting);
+
+            LockMapsForAiService.LOCK_FOR_AI_OUTPUT.remove(aiKey);
+        }
+        return result;
+    }
+
+    public PersonalLifeAnalyzeResponse analyzeForPrivate(String username) throws IOException, InterruptedException {
+        PersonalLifeAnalyzeResponse result = new PersonalLifeAnalyzeResponse();
+        var fromDb = aiOutputRepository.findByUsernameAndOutputType(username, AiOutputType.ANALYZE_FOR_PRIVATE);
+        AiOutput aoFromDb = getAiOutputIfSufficient(username, fromDb);
+        if(aoFromDb != null) {
+            var aiResultText = getOnlyAiText(aoFromDb);
+            result.setAiResult(aiResultText);
+        }
+
+        var aiKey = new AiKey(username, AiOutputType.ANALYZE_FOR_PRIVATE);
+        Object lock = LockMapsForAiService.LOCK_FOR_AI_OUTPUT.computeIfAbsent(aiKey, k -> new Object());
+        synchronized (lock) {
+            fromDb = aiOutputRepository.findByUsernameAndOutputType(username, AiOutputType.ANALYZE_FOR_PRIVATE);
+            aoFromDb = getAiOutputIfSufficient(username, fromDb);
+            if(aoFromDb != null) {
+                var aiResultText = getOnlyAiText(aoFromDb);
+                result.setAiResult(aiResultText);
+                return result;
+            }
+
+            UserProfile userProfile = analyzeService.getUserProfile(username);
+            var aiInput = convertAiInput(null, userProfile);
+            var aiResult = aiProvider.analyzeForPrivate(aiInput);
             var aiResultText = getOnlyAiText(aiResult);
             result.setAiResult(aiResultText);
 
@@ -94,8 +134,9 @@ public class AiService {
             }
 
             UserFeed userFeed = analyzeService.getUserFeed(username, 2);
+            UserProfile userProfile = analyzeService.getUserProfile(username);
             var allImages = userFeed.getUserPosts();
-            var aiInput = convertAiInput(allImages);
+            var aiInput = convertAiInput(allImages, userProfile);
             var aiResult = aiProvider.analyzeLoveLife(aiInput);
             var aiText = getOnlyAiText(aiResult);
             result.setAiResult(aiText);
@@ -133,8 +174,9 @@ public class AiService {
             }
 
             UserFeed userFeed = analyzeService.getUserFeed(username, 2);
+            UserProfile userProfile = analyzeService.getUserProfile(username);
             var allImages = userFeed.getUserPosts();
-            var aiInput = convertAiInput(allImages);
+            var aiInput = convertAiInput(allImages, userProfile);
             var aiResult = aiProvider.analyzeMillionaireChange(aiInput);
             var aiText = getOnlyAiText(aiResult);
             result.setAiResult(aiText);
@@ -172,8 +214,9 @@ public class AiService {
             }
 
             UserFeed userFeed = analyzeService.getUserFeed(username, 2);
+            UserProfile userProfile = analyzeService.getUserProfile(username);
             var allImages = userFeed.getUserPosts();
-            var aiInput = convertAiInput(allImages);
+            var aiInput = convertAiInput(allImages, userProfile);
             var aiResult = aiProvider.analyzeSimilarCeleb(aiInput);
             var aiResultText = getOnlyAiText(aiResult);
             result.setAiResult(aiResultText);
@@ -212,8 +255,9 @@ public class AiService {
             }
 
             UserFeed userFeed = analyzeService.getUserFeed(username, 2);
+            UserProfile userProfile = analyzeService.getUserProfile(username);
             var allImages = userFeed.getUserPosts();
-            var aiInput = convertAiInput(allImages);
+            var aiInput = convertAiInput(allImages, userProfile);
             var aiResult = aiProvider.analyzeStrengthAnfWeaknesses(aiInput);
             var aiResultText = getOnlyAiText(aiResult);
             result.setAiResult(aiResultText);
@@ -243,18 +287,29 @@ public class AiService {
         return null;
     }
 
-    private static AiInput convertAiInput(List<UserFeed.UserPost> allImages) {
-        var roastInput = new AiInput();
-        var userPostToAiImage = allImages.stream().limit(20).map(i -> {
-            var res = new AiInputImage();
-            res.setCaption(i.getCaption());
-            res.setCommentCount(i.getCommentCount());
-            res.setLikeCount(i.getLikeCount());
-            return res;
-        }).toList();
+    private static AiInput convertAiInput(List<UserFeed.UserPost> allImages, UserProfile userProfile) {
+        var aiInput = new AiInput();
+        if(allImages != null) {
+            var userPostToAiImage = allImages.stream().limit(20).map(i -> {
+                var res = new AiInputImage();
+                res.setCaption(i.getCaption());
+                res.setCommentCount(i.getCommentCount());
+                res.setLikeCount(i.getLikeCount());
+                return res;
+            }).toList();
+            aiInput.setImages(userPostToAiImage);
+        } else {
+            aiInput.setImages(new ArrayList<>());
+        }
+        aiInput.setBiography(userProfile.getBiography());
+        aiInput.setFullName(userProfile.getFullName());
+        aiInput.setFollowerCount(userProfile.getFollowerCount());
+        aiInput.setFollowingCount(userProfile.getFollowingCount());
+        aiInput.setUsername(userProfile.getUsername());
+        aiInput.setMediaCount(userProfile.getMediaCount());
+        aiInput.setProfilePicUrl(userProfile.getProfilePicUrl());
 
-        roastInput.setImages(userPostToAiImage);
-        return roastInput;
+        return aiInput;
     }
 
     private static String getOnlyAiText(AiOutput aiResult) throws JsonProcessingException {

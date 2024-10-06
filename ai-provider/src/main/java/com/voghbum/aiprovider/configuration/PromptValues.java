@@ -6,8 +6,8 @@ import org.springframework.stereotype.Component;
 @Component
 public class PromptValues {
     /*
-        system rolünde, sorudan önce api'ye verilecek genel instruction.
-     */
+            system rolünde, sorudan önce api'ye verilecek genel instruction.
+         */
     @Value("#{promptProvider['ai.sys.instruction.common']}")
     public String SYS_COMMON_INS;
     @Value("#{promptProvider['ai.sys.quest.personal-info']}")
@@ -22,4 +22,6 @@ public class PromptValues {
     public String SYS_ISIM_BULAMADIGIM_DALGA_QUEST;
     @Value("#{promptProvider['ai.sys.quest.similiar-celeb']}")
     public String SYS_SIMILIAR_CELEB_QUEST;
+    @Value("#{promptProvider['ai.sys.quest.analyze-private-profile']}")
+    public  String SYS_ANALYZE_PRIVATE_USER_QUEST;
 }

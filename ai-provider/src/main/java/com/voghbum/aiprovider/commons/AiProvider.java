@@ -11,4 +11,5 @@ public interface AiProvider {
     AiOutput analyzeMillionaireChange(AiInput input);
     AiOutput analyzeSimilarCeleb(AiInput input);
     AiOutput analyzeStrengthAnfWeaknesses(AiInput input);
+    AiOutput analyzeForPrivate(AiInput aiInput);
 }
